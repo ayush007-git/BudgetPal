@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Auth.css'; 
+import { API_BASE_URL } from '../config';
 
 const Signup = () => {
   const navigate = useNavigate(); 
@@ -19,9 +20,32 @@ const Signup = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup data:', formData);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data?.success) {
+        alert(data?.message || 'Signup failed');
+        return;
+      }
+
+      // Store token and basic user info
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.user));
+      navigate('/');
+    } catch (err) {
+      alert('Network error. Please try again.');
+    }
   };
 
   const handleBackToHome = () => {
