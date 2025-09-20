@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Auth.css'; 
 import { API_BASE_URL } from '../config';
+import logo from '../assets/logo.jpg';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: formData.email, // frontend uses email field; backend expects username
+          username: formData.email,
           password: formData.password
         })
       });
@@ -40,14 +41,14 @@ const Login = () => {
       // Store token and basic user info
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('user', JSON.stringify(data.data.user));
-      navigate('/');
+      navigate('/home'); // Navigate to home after successful login
     } catch (err) {
       alert('Network error. Please try again.');
     }
   };
 
   const handleBackToHome = () => {
-    navigate('/home');
+    navigate('/');
   };
 
   const handleSignUp = () => {
@@ -59,69 +60,77 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-content">
-        <button className="back-button" onClick={handleBackToHome}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <div className="split-auth-container">
+      {/* Left Side - Blue Section */}
+      <div className="auth-left-panel">
+        <button className="back-to-home-btn" onClick={handleBackToHome}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           Back to home
         </button>
+      </div>
 
-        <div className="auth-header">
-          <h1 className="auth-title">Welcome Back</h1>
-          <p className="auth-subtitle">Sign in to manage your group expenses</p>
-        </div>
-
-        <div className="auth-form-container">
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <div className="input-wrapper">
-                <input
-                  type="email"
-                  name="email"
-                  className="form-input"
-                  placeholder="Enter your Email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                />
-                {/* Envelope icon for email field */}
-                <svg className="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2"/>
-                  <polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-              </div>
+      {/* Right Side - Form Section */}
+      <div className="auth-right-panel">
+        <div className="auth-form-section">
+          {/* Logo */}
+          <div className="logo-section">
+            <div className="circular-logo">
+              <img src={logo} alt="BudgetPal Logo" className="logo-img" />
             </div>
+          </div>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
+          {/* Title */}
+          <h1 className="auth-page-title">BUDGETPAL LOGIN</h1>
+
+          {/* Form */}
+          <form className="login-form" onSubmit={handleSubmit}>
+            <div className="input-section">
+              <label className="input-label">Email</label>
               <input
-                type="password"
-                name="password"
-                className="form-input"
-                placeholder="Enter your Password"
-                value={formData.password}
+                type="email"
+                name="email"
+                className="styled-input"
+                placeholder="Enter your email"
+                value={formData.email}
                 onChange={handleInputChange}
                 required
               />
             </div>
 
-            <div className="forgot-password-container">
-              <button type="button" className="forgot-password-button" onClick={handleForgotPassword}>
+            <div className="input-section">
+              <label className="input-label">Password</label>
+              <div className="password-field">
+                <input
+                  type="password"
+                  name="password"
+                  className="styled-input"
+                  placeholder="Enter Your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                />
+                <svg className="field-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 2L9 14L5 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div className="forgot-link-section">
+              <button type="button" className="forgot-link" onClick={handleForgotPassword}>
                 Forget Password?
               </button>
             </div>
 
-            <button type="submit" className="submit-button">
+            <button type="submit" className="primary-btn">
               Sign In
             </button>
 
-            <p className="auth-switch">
+            <p className="switch-text">
               Don't have an account? 
-              <button type="button" className="switch-button" onClick={handleSignUp}>
+              <button type="button" className="link-btn" onClick={handleSignUp}>
                 Sign Up
               </button>
             </p>
