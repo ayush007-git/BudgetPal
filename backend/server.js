@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 import authRoutes from './routes/auth.js';
+import databaseRoutes from './routes/database.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -15,7 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? false : true),
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -32,6 +38,11 @@ app.get('/', (req, res) => {
                 forgotPassword: "POST /api/auth/forgot-password",
                 getEmergencyQuestion: "GET /api/auth/emergency-question/:username",
                 setEmergencyQuestion: "PUT /api/auth/set-emergency-question"
+            },
+            database: {
+                clear: "DELETE /api/database/clear",
+                stats: "GET /api/database/stats",
+                users: "GET /api/database/users"
             }
         }
     });
@@ -39,6 +50,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/database', databaseRoutes);
 
 // Error handling middleware
 app.use(notFound);

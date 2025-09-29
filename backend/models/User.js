@@ -1,82 +1,95 @@
-import mongoose from 'mongoose';
+import { DataTypes } from 'sequelize';
 import bcrypt from 'bcrypt';
+import { sequelize } from '../config/database.js';
 
-const userSchema = new mongoose.Schema({
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   username: {
-    type: String,
-    required: [true, 'Username is required'],
+    type: DataTypes.STRING(30),
+    allowNull: false,
     unique: true,
-    trim: true,
-    minlength: [3, 'Username must be at least 3 characters long'],
-    maxlength: [30, 'Username cannot exceed 30 characters']
+    validate: {
+      len: [3, 30],
+      notEmpty: true
+    }
   },
   password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters long']
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [6, 255],
+      notEmpty: true
+    }
   },
   emergencyQuestion: {
-    type: String,
-    required: [true, 'Emergency question is required'],
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
   },
   emergencyAnswer: {
-    type: String,
-    required: [true, 'Emergency answer is required'],
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
   },
   createdAt: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   lastLogin: {
-    type: Date,
-    default: null
+    type: DataTypes.DATE,
+    allowNull: true
+  }
+}, {
+  tableName: 'users',
+  timestamps: true,
+  hooks: {
+    beforeCreate: async (user) => {
+      if (user.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+      if (user.emergencyAnswer) {
+        const salt = await bcrypt.genSalt(10);
+        user.emergencyAnswer = await bcrypt.hash(user.emergencyAnswer, salt);
+      }
+    },
+    beforeUpdate: async (user) => {
+      if (user.changed('password')) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(user.password, salt);
+      }
+      if (user.changed('emergencyAnswer')) {
+        const salt = await bcrypt.genSalt(10);
+        user.emergencyAnswer = await bcrypt.hash(user.emergencyAnswer, salt);
+      }
+    }
   }
 });
 
-// Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Hash emergency answer before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('emergencyAnswer')) return next();
-  
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.emergencyAnswer = await bcrypt.hash(this.emergencyAnswer, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
+// Instance methods
+User.prototype.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to compare emergency answer
-userSchema.methods.compareEmergencyAnswer = async function(candidateAnswer) {
+User.prototype.compareEmergencyAnswer = async function(candidateAnswer) {
   return await bcrypt.compare(candidateAnswer, this.emergencyAnswer);
 };
 
-// Method to update password
-userSchema.methods.updatePassword = async function(newPassword) {
+User.prototype.updatePassword = async function(newPassword) {
   this.password = newPassword;
   return await this.save();
 };
-
-const User = mongoose.model('User', userSchema);
 
 export default User;
