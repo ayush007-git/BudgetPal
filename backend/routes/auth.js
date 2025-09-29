@@ -34,7 +34,7 @@ router.post('/signup', async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ where: { username } });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -44,24 +44,22 @@ router.post('/signup', async (req, res) => {
 
     // Create new user (without emergency question for now)
     // Emergency question will be set during onboarding
-    const user = new User({
+    const user = await User.create({
       username,
       password,
       emergencyQuestion: 'Temporary question - to be set during onboarding',
       emergencyAnswer: 'temporary'
     });
 
-    await user.save();
-
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
       data: {
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           createdAt: user.createdAt
         },
@@ -94,7 +92,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ where: { username } });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -116,14 +114,14 @@ router.post('/login', async (req, res) => {
     await user.save();
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user.id);
 
     res.json({
       success: true,
       message: 'Login successful',
       data: {
         user: {
-          id: user._id,
+          id: user.id,
           username: user.username,
           lastLogin: user.lastLogin
         },
@@ -163,7 +161,7 @@ router.post('/forgot-password', async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ where: { username } });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -212,7 +210,10 @@ router.get('/emergency-question/:username', async (req, res) => {
   try {
     const { username } = req.params;
 
-    const user = await User.findOne({ username }).select('emergencyQuestion');
+    const user = await User.findOne({ 
+      where: { username },
+      attributes: ['emergencyQuestion']
+    });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -258,7 +259,7 @@ router.put('/set-emergency-question', async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ where: { username } });
     if (!user) {
       return res.status(404).json({
         success: false,
