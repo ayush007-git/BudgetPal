@@ -1,12 +1,37 @@
-# React + Vite
+# BudgetPal Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Setup
+```bash
+cd Frontend
+npm install
+npm run dev
+```
 
-Currently, two official plugins are available:
+Default dev server: `http://localhost:5173`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Environment Configuration
+Create `src/config.js` to point to your backend API:
+```javascript
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+```
 
-## Expanding the ESLint configuration
+Or set `.env`:
+```
+VITE_API_BASE_URL=http://localhost:3000
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Relevant Backend Endpoints
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `GET /api/auth/emergency-question/:username`
+- `PUT /api/auth/set-emergency-question`
+- `POST /api/groups/` — create group
+- `POST /api/groups/:groupId/members` — add member
+- `POST /api/groups/:groupId/expenses` — create expense
+- `GET /api/groups/:groupId/balance` — settlement plan
+
+## Build
+```bash
+npm run build
+npm run preview
+```

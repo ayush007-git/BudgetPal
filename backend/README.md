@@ -329,6 +329,46 @@ Common HTTP status codes:
 ### Testing
 Use the provided `test.rest` file with REST Client extension in VS Code to test all endpoints.
 
+### Group & Expense Routes
+
+#### Groups
+- **POST** `/api/groups/` — Create a new group
+  - Body:
+  ```json
+  {
+    "name": "Trip to Goa",
+    "description": "Friends trip"
+  }
+  ```
+- **POST** `/api/groups/:groupId/members` — Add a user to a group
+  - Body:
+  ```json
+  {
+    "userId": 1
+  }
+  ```
+- **GET** `/api/groups/:groupId` — Get group details
+- **GET** `/api/groups/:groupId/balance` — Get simplified settlement plan for all unpaid debts
+
+#### Expenses
+- **POST** `/api/groups/:groupId/expenses` — Create a new expense in a group
+  - Body:
+  ```json
+  {
+    "totalAmount": 1200,
+    "description": "Dinner",
+    "paidById": 2,
+    "screenshotUrl": "https://example.com/receipt.png"
+  }
+  ```
+
+### Models Overview
+- `User` — name, email (unique), password
+- `Group` — name, description
+- `Expense` — description, totalAmount, screenshotUrl, date; belongs to `Group` and `User` (as `paidBy`)
+- `Debt` — amount, status ('unpaid' | 'resolved'); belongs to `Expense`, `User` (as `Payer` and `Debtor`)
+
+
 ## Migration from MongoDB
 
 If migrating from MongoDB:
