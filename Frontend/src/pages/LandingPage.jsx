@@ -2,6 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Landing.css';
 import logo from '../assets/logo.jpg'; 
+import Features from './Features';
+import Pricing from './Pricing';
+import About from './About';
+import Contact from './Contact';
+import Footer from './Footer';
+
 
 const BudgetPalLanding = () => {
   return (
@@ -123,6 +129,11 @@ const BudgetPalLanding = () => {
           </div>
         </div>
       </div>
+      <Features />
+      <Pricing />
+      <About />
+      <Contact />
+      <Footer />
       <div className="bg-circle circle-1"></div>
       <div className="bg-circle circle-2"></div>
       <div className="bg-circle circle-3"></div>

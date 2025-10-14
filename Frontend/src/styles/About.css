@@ -1,0 +1,149 @@
+/* ========================
+   ABOUT SECTION STYLES
+======================== */
+.about-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 120px 20px 80px;  /* increased top padding to prevent hiding */
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Add safe scroll offset for fixed navbar */
+html {
+  scroll-padding-top: 140px;
+}
+
+/* Floating circles/bubbles */
+.about-section::before,
+.about-section::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.about-section::before {
+  width: 150px;
+  height: 150px;
+  top: -30px;
+  left: -30px;
+}
+
+.about-section::after {
+  width: 200px;
+  height: 200px;
+  bottom: -50px;
+  right: -40px;
+}
+
+/* Centered Title */
+.about-main-title {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 50px;
+  font-weight: 700;
+}
+
+.about-main-title span {
+  color: #facc15; /* Yellow highlight */
+}
+
+/* Card Container */
+.about-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  padding: 40px 30px;
+  border-radius: 20px;
+  max-width: 1000px;
+  width: 100%;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+  gap: 30px;
+}
+
+/* Text Content */
+.about-text {
+  flex: 1;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.95);
+}
+
+/* Button */
+.about-btn {
+  background-color:#3b82f6 100%;
+  color: #111827;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.about-btn:hover {
+  background-color: rgb(48, 35, 198);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(8, 144, 234, 0.3);
+}
+
+/* Illustration */
+.about-illustration {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.about-illustration img {
+  width: 250px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ========================
+   RESPONSIVE DESIGN
+======================== */
+@media (max-width: 992px) {
+  .about-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .about-text {
+    margin-bottom: 20px;
+  }
+
+  .about-main-title {
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+  }
+}
+
+@media (max-width: 600px) {
+  .about-main-title {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
+
+  .about-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+
+  .about-illustration img {
+    width: 180px;
+  }
+}
