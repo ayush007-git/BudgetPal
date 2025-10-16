@@ -1,0 +1,268 @@
+.hero {
+  padding-top: 100px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+
+}
+
+
+.hero-content {
+  max-width: 100%;         /* use full width */
+  margin: 0;               /* remove auto margin */
+  padding: 0 5.5rem;       /* very small left-right padding */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;               /* reduced gap */
+  align-items: center;
+}
+
+
+.hero-left {
+  color: #fff;
+}
+
+.hero-heading {
+  margin-bottom: 2rem;
+}
+
+.heading-line {
+  display: block;
+  font-size: 3.5rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  opacity: 0.95;
+}
+
+.hero-cta {
+  background: #f79efd;
+  color: #fff;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.hero-cta:hover {
+  background: #df64cb;
+}
+
+.arrow-icon {
+  font-size: 1.5rem;
+}
+
+.hero-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustration-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.illustration {
+  position: relative;
+  width: 400px;
+  height: 300px;
+}
+
+/* People figures */
+.person {
+  position: absolute;
+  width: 40px;
+  height: 60px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #8A2BE2, #9370DB);
+}
+
+.person-1 {
+  top: 20px;
+  left: 50px;
+}
+
+.person-2 {
+  top: 40px;
+  left: 100px;
+}
+
+.person-3 {
+  top: 60px;
+  left: 150px;
+}
+
+.person-4 {
+  top: 30px;
+  left: 200px;
+}
+
+/* Screens */
+.screen {
+  position: absolute;
+  width: 120px;
+  height: 160px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.screen-left {
+  top: 80px;
+  left: 60px;
+}
+
+.screen-right {
+  top: 100px;
+  right: 60px;
+}
+
+.screen-content {
+  padding: 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Circular chart */
+.circular-chart {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8A2BE2, #9370DB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.chart-center {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Data elements */
+.data-list {
+  text-align: center;
+}
+
+.data-item {
+  font-size: 0.8rem;
+  color: #8A2BE2;
+  font-weight: 600;
+}
+
+.data-text {
+  font-size: 1rem;
+  color: #8A2BE2;
+  font-weight: 600;
+  text-align: center;
+}
+
+.data-numbers {
+  font-size: 0.7rem;
+  color: #8A2BE2;
+  text-align: center;
+  margin: 5px 0;
+}
+
+/* Line graph */
+.line-graph {
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(90deg, #8A2BE2 0%, #9370DB 50%, #8A2BE2 100%);
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+/* Bar charts */
+.bar-chart {
+  display: flex;
+  gap: 5px;
+  align-items: end;
+  height: 30px;
+}
+
+.bar {
+  background: linear-gradient(135deg, #8A2BE2, #9370DB);
+  border-radius: 2px;
+  flex: 1;
+}
+
+.bar-1 {
+  height: 20px;
+}
+
+.bar-2 {
+  height: 25px;
+}
+
+.bar-3 {
+  height: 15px;
+}
+
+/* Plants */
+.plant {
+  position: absolute;
+  width: 30px;
+  height: 40px;
+  background: linear-gradient(135deg, #228B22, #32CD32);
+  border-radius: 15px;
+}
+
+.plant-left {
+  bottom: 20px;
+  left: 20px;
+}
+
+.plant-right {
+  bottom: 30px;
+  right: 20px;
+}
+
+.plant::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #228B22, #32CD32);
+  border-radius: 50%;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 2rem;
+  }
+  
+  .heading-line {
+    font-size: 2.5rem;
+  }
+  
+  .illustration {
+    width: 300px;
+    height: 250px;
+  }
+} 
