@@ -43,6 +43,133 @@
   margin-left: 16px;
   cursor: pointer;
   font-size: 20px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.icons span:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Form Styles */
+.group-form {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.input-section {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.styled-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  background: #ffffff;
+  color: #2c3e50;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.styled-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  background: #ffffff;
+  color: #2c3e50;
+}
+
+.styled-input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+textarea.styled-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.primary-btn {
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #7c3aed;
+}
+
+.primary-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background: white;
+  color: #374151;
+  border: 2px solid #e5e7eb;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+/* Loading and empty states */
+.loading-message, .no-groups-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.loading-message {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.no-groups-message p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.no-groups-message p:first-child {
+  font-weight: 600;
+  color: #374151;
 }
 
 /* Welcome */

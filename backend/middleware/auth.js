@@ -16,7 +16,7 @@ export const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findById(decoded.userId).select('-password -emergencyAnswer');
+    const user = await User.findByPk(decoded.userId);
     
     if (!user) {
       return res.status(401).json({ 
@@ -25,7 +25,8 @@ export const authenticateToken = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    const { password, emergencyAnswer, ...safeUser } = user.get({ plain: true });
+    req.user = safeUser;
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {

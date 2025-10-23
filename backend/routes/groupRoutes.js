@@ -1,20 +1,27 @@
 import { Router } from 'express';
-import { createGroup, addMemberToGroup, getGroupDetails, calculateGroupBalance } from '../controllers/groupController.js';
+import { createGroup, addMemberToGroup, getGroupDetails, calculateGroupBalance, getUserGroups, markDebtAsPaid } from '../controllers/groupController.js';
+import { authenticateToken } from '../middleware/auth.js';
 import expenseRoutes from './expenseRoutes.js';
 
 const router = Router();
 
-// POST / - create a new group
-router.post('/', createGroup);
+// GET / - get all groups for the authenticated user
+router.get('/', authenticateToken, getUserGroups);
 
-// POST /:groupId/members - add a user to a group
-router.post('/:groupId/members', addMemberToGroup);
+// POST / - create a new group (requires authentication)
+router.post('/', authenticateToken, createGroup);
 
-// GET /:groupId - get details of a specific group
-router.get('/:groupId', getGroupDetails);
+// POST /:groupId/members - add a user to a group (requires authentication)
+router.post('/:groupId/members', authenticateToken, addMemberToGroup);
 
-// GET /:groupId/balance - get the simplified settlement plan
-router.get('/:groupId/balance', calculateGroupBalance);
+// GET /:groupId - get details of a specific group (requires authentication)
+router.get('/:groupId', authenticateToken, getGroupDetails);
+
+// GET /:groupId/balance - get the simplified settlement plan (requires authentication)
+router.get('/:groupId/balance', authenticateToken, calculateGroupBalance);
+
+// POST /:groupId/mark-paid - mark a debt as paid (requires authentication)
+router.post('/:groupId/mark-paid', authenticateToken, markDebtAsPaid);
 
 // Mount expense routes under a group
 router.use('/:groupId/expenses', expenseRoutes);

@@ -77,12 +77,13 @@
   width: 100%;
   padding: 15px 20px;
   border-radius: 12px;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.3);
   outline: none;
   font-size: 1rem;
-  background: rgba(255,255,255,0.1); /* semi-transparent input */
-  color: #fff;
+  background: rgba(255,255,255,0.9);
+  color: #2c3e50;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .form-group textarea {
@@ -90,7 +91,8 @@
   resize: none;
 }
 
-.form-group label {
+/* Contact page specific floating labels - only apply to contact form */
+.contact-form .form-group label {
   position: absolute;
   top: 50%;
   left: 20px;
@@ -101,10 +103,10 @@
   transition: 0.3s ease all;
 }
 
-.form-group input:focus + label,
-.form-group input:not(:placeholder-shown) + label,
-.form-group textarea:focus + label,
-.form-group textarea:not(:placeholder-shown) + label {
+.contact-form .form-group input:focus + label,
+.contact-form .form-group input:not(:placeholder-shown) + label,
+.contact-form .form-group textarea:focus + label,
+.contact-form .form-group textarea:not(:placeholder-shown) + label {
   top: -10px;
   font-size: 0.85rem;
   color: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #3b82f6 100%);

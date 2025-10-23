@@ -1,5 +1,5 @@
 import { sequelize } from '../config/database.js';
-import User from './user.js';
+import User from './User.js';
 import Group from './group.js';
 import Expense from './expense.js';
 import Debt from './debt.js';
@@ -24,6 +24,20 @@ User.hasMany(Expense, {
 // Expense -> Debt (One-to-Many)
 Expense.hasMany(Debt, {
   foreignKey: { name: 'expenseId', allowNull: false },
+  onDelete: 'CASCADE'
+});
+
+// User -> Debt (One-to-Many) as payer
+User.hasMany(Debt, {
+  as: 'Payer',
+  foreignKey: { name: 'payerUserId', allowNull: false },
+  onDelete: 'CASCADE'
+});
+
+// User -> Debt (One-to-Many) as debtor
+User.hasMany(Debt, {
+  as: 'Debtor',
+  foreignKey: { name: 'debtorUserId', allowNull: false },
   onDelete: 'CASCADE'
 });
 
