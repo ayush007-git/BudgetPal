@@ -1,20 +1,117 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
-import logo from "../assets/logo.jpg"; // logo like in landing page
-
-const groups = [
-  { name: "Paris Trip 2024", members: 4, balance: -150, lastActivity: "2 days ago", icon: "✈️" },
-  { name: "Apartment 5B", members: 3, balance: 85.5, lastActivity: "1 week ago", icon: "🏠" },
-  { name: "Office Lunch Group", members: 6, balance: -23.25, lastActivity: "3 days ago", icon: "🍴" },
-  { name: "Weekend Getaway", members: 5, balance: 245.75, lastActivity: "5 days ago", icon: "🏖️" },
-];
+import logo from "../assets/logo.jpg";
+import { API_BASE_URL } from "../config";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUserGroups();
+  }, []);
+
+  // Refresh groups when component becomes visible (e.g., returning from create group)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUserGroups();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  const fetchUserGroups = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/groups/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setGroups(data.data.groups);
+      } else {
+        console.error('Failed to fetch groups:', data.message);
+        setGroups([]);
+      }
+    } catch (err) {
+      console.error('Error fetching groups:', err);
+      setGroups([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const totalBalance = groups.reduce((acc, g) => acc + g.balance, 0);
 
-  // Function to open a blank page
-  const openBlank = () => {
-    window.open("about:blank", "_blank");
+  const handleNotifications = () => {
+    navigate('/notifications');
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
+  };
+
+  const handleProfile = () => {
+    navigate('/settings');
+  };
+
+  const handleSettleUp = () => {
+    // For now, show the first group's settlement
+    if (groups.length > 0) {
+      navigate(`/settlement/${groups[0].id}`);
+    } else {
+      alert('No groups available for settlement');
+    }
+  };
+
+  const handleViewGroupDetails = (groupId) => {
+    navigate(`/group/${groupId}`);
+  };
+
+  const handleAddExpenses = () => {
+    if (groups.length > 0) {
+      navigate(`/group/${groups[0].id}/add-expense`);
+    } else {
+      alert('Create a group first to add expenses');
+    }
+  };
+
+  const handleInviteFriends = () => {
+    if (groups.length > 0) {
+      navigate(`/group/${groups[0].id}`);
+    } else {
+      alert('Create a group first to invite friends');
+    }
+  };
+
+  const handleViewAllBalances = () => {
+    if (groups.length > 0) {
+      navigate(`/settlement/${groups[0].id}`);
+    } else {
+      alert('No groups available to view balances');
+    }
+  };
+
+  const handleRecentActivity = () => {
+    navigate('/notifications');
+  };
+
+  const handleCreateGroup = () => {
+    navigate('/create-group');
   };
 
   return (
@@ -26,9 +123,9 @@ export default function Dashboard() {
           <h1 className="logo-text">BudgetPal</h1>
         </div>
         <div className="icons">
-          <span onClick={openBlank}>🔔</span>
-          <span onClick={openBlank}>⚙️</span>
-          <span onClick={openBlank}>👤</span>
+          <span onClick={handleNotifications} title="Notifications">🔔</span>
+          <span onClick={handleSettings} title="Settings">⚙️</span>
+          <span onClick={handleProfile} title="Profile">👤</span>
         </div>
       </div>
 
@@ -44,32 +141,41 @@ export default function Dashboard() {
           <h3>💲 Financial Summary</h3>
           <p>Total Balance</p>
           <p className={totalBalance >= 0 ? "positive" : "negative"}>
-            {totalBalance >= 0 ? `+$${totalBalance.toFixed(2)}` : `-$${Math.abs(totalBalance).toFixed(2)}`}
+            {totalBalance >= 0 ? `+₹${totalBalance.toFixed(2)}` : `-₹${Math.abs(totalBalance).toFixed(2)}`}
           </p>
         </div>
-        <button className="settle-btn" onClick={openBlank}>Settle Up</button>
+        <button className="settle-btn" onClick={handleSettleUp}>Settle Up</button>
       </div>
 
       {/* Groups */}
       <div className="groups">
         <div className="groups-header">
           <h3>Your Groups</h3>
-          <button className="create-btn" onClick={openBlank}>+ Create group</button>
+          <button className="create-btn" onClick={handleCreateGroup}>+ Create group</button>
         </div>
         <div className="group-list">
-          {groups.map((g, i) => (
-            <div className="group-card" key={i}>
-              <h4>{g.icon} {g.name}</h4>
-              <p className="members">{g.members} Members</p>
-              <p className={g.balance >= 0 ? "positive" : "negative"}>
-                {g.balance >= 0
-                  ? `You are owed $${g.balance.toFixed(2)}`
-                  : `You owe $${Math.abs(g.balance).toFixed(2)}`}
-              </p>
-              <p className="last-activity">📅 Last activity {g.lastActivity}</p>
-              <button onClick={openBlank}>View Details</button>
+          {loading ? (
+            <div className="loading-message">Loading your groups...</div>
+          ) : groups.length === 0 ? (
+            <div className="no-groups-message">
+              <p>You haven't created any groups yet.</p>
+              <p>Click "Create group" to get started!</p>
             </div>
-          ))}
+          ) : (
+            groups.map((g, i) => (
+              <div className="group-card" key={g.id || i}>
+                <h4>{g.icon} {g.name}</h4>
+                <p className="members">{g.members} Members</p>
+                <p className={g.balance >= 0 ? "positive" : "negative"}>
+                  {g.balance >= 0
+                    ? `You are owed ₹${g.balance.toFixed(2)}`
+                    : `You owe ₹${Math.abs(g.balance).toFixed(2)}`}
+                </p>
+                <p className="last-activity">📅 Last activity {g.lastActivity}</p>
+                <button onClick={() => handleViewGroupDetails(g.id)}>View Details</button>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -77,10 +183,10 @@ export default function Dashboard() {
       <div className="actions">
         <h3>Quick Actions</h3>
         <div className="action-list">
-          <button onClick={openBlank}>➕ Add Expenses</button>
-          <button onClick={openBlank}>👥 Invite Friends</button>
-          <button onClick={openBlank}>💲 View all balances</button>
-          <button onClick={openBlank}>📅 Recent activity</button>
+          <button onClick={handleAddExpenses}>➕ Add Expenses</button>
+          <button onClick={handleInviteFriends}>👥 Invite Friends</button>
+          <button onClick={handleViewAllBalances}>💲 View all balances</button>
+          <button onClick={handleRecentActivity}>📅 Recent activity</button>
         </div>
       </div>
     </div>

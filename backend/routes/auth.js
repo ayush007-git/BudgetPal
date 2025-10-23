@@ -1,6 +1,6 @@
 import express from 'express';
 import User from '../models/User.js';
-import { generateToken } from '../middleware/auth.js';
+import { generateToken, authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -282,6 +282,97 @@ router.put('/set-emergency-question', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error'
+    });
+  }
+});
+
+// @route   PUT /api/auth/change-password
+// @desc    Change user password (requires current password)
+// @access  Private
+router.put('/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    // Find user
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+    if (!isCurrentPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Update password
+    await user.updatePassword(newPassword);
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during password change'
+    });
+  }
+});
+
+// @route   DELETE /api/auth/delete-account
+// @desc    Delete user account and all associated data
+// @access  Private
+router.delete('/delete-account', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Find user
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Delete user (this will cascade delete related data due to foreign key constraints)
+    await user.destroy();
+
+    res.json({
+      success: true,
+      message: 'Account deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during account deletion'
     });
   }
 });

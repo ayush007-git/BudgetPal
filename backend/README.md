@@ -15,6 +15,27 @@ A comprehensive user management API for BudgetPal with authentication, signup, l
 - ✅ Input validation
 - ✅ Database management endpoints for testing
 
+## Environment Configuration
+
+You can use a single `DATABASE_URL` for cloud Postgres (Render, Supabase, Railway) or local discrete variables. The server prefers `DATABASE_URL` when present.
+
+```env
+# Preferred: unified connection string
+DATABASE_URL=postgres://USER:PASSWORD@HOST:PORT/DBNAME
+
+# Optional fallbacks if DATABASE_URL is not set
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_DB=budgetpal
+
+JWT_SECRET=your_super_secret_jwt_key_here_change_this_in_production
+PORT=3000
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
+```
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
@@ -41,6 +62,22 @@ CREATE DATABASE budgetpal;
 
 3. Set up environment variables:
 Create a `.env` file in the backend directory:
+
+**For Cloud Deployment (Recommended):**
+```env
+# Single connection string for cloud PostgreSQL (Render, Supabase, Railway, etc.)
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
+
+# JWT Configuration
+JWT_SECRET=your_super_secret_jwt_key_here_change_this_in_production
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
+```
+
+**For Local Development:**
 ```env
 # Database Configuration
 POSTGRES_DB=budgetpal
@@ -54,7 +91,11 @@ JWT_SECRET=your_super_secret_jwt_key_here_change_this_in_production
 
 # Server Configuration
 PORT=3000
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
 ```
+
+**Note:** The server prioritizes `DATABASE_URL` if present, falling back to individual POSTGRES_* variables.
 
 4. Start the server:
 ```bash
@@ -62,6 +103,73 @@ npm start
 ```
 
 The server will automatically create the necessary tables in PostgreSQL on startup.
+
+## Cloud PostgreSQL Setup (Recommended)
+
+### Option 1: Supabase (Free Tier)
+1. **Create Supabase Project:**
+   - Go to [supabase.com](https://supabase.com)
+   - Create new project
+   - Wait for database to be ready
+
+2. **Get Connection String:**
+   - Go to Settings → Database
+   - Copy the "Connection string" (URI format)
+   - Replace `[YOUR-PASSWORD]` with your database password
+
+3. **Set Environment Variables:**
+   ```env
+   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+   JWT_SECRET=your_super_secret_jwt_key_here
+   PORT=3000
+   NODE_ENV=development
+   CORS_ORIGIN=http://localhost:5173
+   ```
+
+### Option 2: Render (Free Tier)
+1. **Create PostgreSQL Database:**
+   - Go to [render.com](https://render.com)
+   - Create new PostgreSQL database
+   - Copy the "External Database URL"
+
+2. **Set Environment Variables:**
+   ```env
+   DATABASE_URL=postgres://[USER]:[PASSWORD]@[HOST]:5432/[DATABASE]
+   JWT_SECRET=your_super_secret_jwt_key_here
+   PORT=3000
+   NODE_ENV=development
+   CORS_ORIGIN=http://localhost:5173
+   ```
+
+### Option 3: Railway
+1. **Create PostgreSQL Database:**
+   - Go to [railway.app](https://railway.app)
+   - Create new PostgreSQL database
+   - Copy the "DATABASE_URL" from Variables tab
+
+2. **Set Environment Variables:**
+   ```env
+   DATABASE_URL=[RAILWAY_DATABASE_URL]
+   JWT_SECRET=your_super_secret_jwt_key_here
+   PORT=3000
+   NODE_ENV=development
+   CORS_ORIGIN=http://localhost:5173
+   ```
+
+### Testing Cloud Connection
+After setting up your `.env` file with `DATABASE_URL`:
+```bash
+cd backend
+npm run dev
+```
+
+You should see:
+```
+🚀 Server running at port 3000
+📱 API Documentation: http://localhost:3000
+PostgreSQL connected successfully
+Database synchronized
+```
 
 ## API Endpoints
 
@@ -378,9 +486,9 @@ If migrating from MongoDB:
 4. Start the server to create PostgreSQL tables
 5. Import your data into PostgreSQL (manual process)
 
-## Render Deployment
+## Deployment
 
-### Quick Deploy to Render
+### Deploy to Render (Recommended)
 
 1. **Create PostgreSQL Database on Render**:
    - Go to [render.com](https://render.com)
@@ -399,6 +507,21 @@ If migrating from MongoDB:
 3. **Build & Start Commands**:
    - Build: `cd backend && npm install`
    - Start: `cd backend && npm start`
+
+### Deploy to Vercel (Alternative)
+
+1. **Set up Cloud PostgreSQL** (Supabase, Railway, or Render)
+2. **Deploy to Vercel**:
+   - Connect your GitHub repository
+   - Set environment variables:
+     - `DATABASE_URL`: Your cloud PostgreSQL URL
+     - `JWT_SECRET`: Generate a strong secret
+     - `NODE_ENV`: `production`
+     - `CORS_ORIGIN`: Your frontend URL
+3. **Build Settings**:
+   - Build Command: `cd backend && npm install`
+   - Output Directory: `backend`
+   - Install Command: `npm install`
 
 ### Environment Variables for Render
 

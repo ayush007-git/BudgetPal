@@ -7,7 +7,7 @@ import logo from '../assets/logo.jpg';
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
 
@@ -27,7 +27,7 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: formData.email,
+          username: formData.username,
           password: formData.password
         })
       });
@@ -41,7 +41,7 @@ const Login = () => {
       // Store token and basic user info
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('user', JSON.stringify(data.data.user));
-      navigate('/home'); // Navigate to home after successful login
+      navigate('/dashboard');
     } catch (err) {
       alert('Network error. Please try again.');
     }
@@ -56,7 +56,11 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    console.log('Forgot password clicked');
+    const username = prompt('Enter your username to get your emergency question:');
+    if (username) {
+      // Navigate to a forgot password page or show emergency question
+      alert('Forgot password functionality - would redirect to emergency question page');
+    }
   };
 
   return (
@@ -88,13 +92,13 @@ const Login = () => {
           {/* Form */}
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="input-section">
-              <label className="input-label">Email</label>
+              <label className="input-label">Username</label>
               <input
-                type="email"
-                name="email"
+                type="text"
+                name="username"
                 className="styled-input"
-                placeholder="Enter your email"
-                value={formData.email}
+                placeholder="Enter your username"
+                value={formData.username}
                 onChange={handleInputChange}
                 required
               />

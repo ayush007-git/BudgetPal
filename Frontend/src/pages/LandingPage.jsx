@@ -61,7 +61,7 @@ const BudgetPalLanding = () => {
                   <div className="control-btn yellow"></div>
                   <div className="control-btn green"></div>
                 </div>
-                <span className="dashboard-amount">$11.34 110%</span>
+                <span className="dashboard-amount">₹11.34 110%</span>
               </div>
               <div className="chart-section">
                 <div className="bar-chart">
@@ -89,11 +89,11 @@ const BudgetPalLanding = () => {
               <div className="stats-section">
                 <div className="stat-item">
                   <span className="stat-label">Expenses</span>
-                  <span className="stat-value">$2,450</span>
+                  <span className="stat-value">₹2,450</span>
                 </div>
                 <div className="stat-item">
                   <span className="stat-label">Savings</span>
-                  <span className="stat-value savings">$1,220</span>
+                  <span className="stat-value savings">₹1,220</span>
                 </div>
               </div>
             </div>
