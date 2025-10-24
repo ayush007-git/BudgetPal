@@ -1,0 +1,6 @@
+{
+    "ai.gemini.apiKey": "AIzaSyCg9-jB_LU7cZUkUA_tIByBKXh-bFlBAHQ",
+    "ai.gemini.model": "gemini-1.5-flash",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000
+  }

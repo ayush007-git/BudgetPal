@@ -32,14 +32,46 @@ export async function getUserGroups(req, res, next) {
     }
 
     // Format groups for frontend
-    const groups = user.Groups.map(group => ({
-      id: group.id,
-      name: group.name,
-      description: group.description,
-      members: 1, // For now, just show 1 member (the creator)
-      balance: 0, // For now, no expenses yet
-      lastActivity: 'Just created',
-      icon: '👥'
+    const groups = await Promise.all(user.Groups.map(async group => {
+      const members = await group.getUsers();
+      const groupId = group.id;
+      const { Expense, Debt } = await import('../models/index.js');
+
+       // Find all unpaid debts for this group related to user
+       const unpaidDebts = await Debt.findAll({
+        where: { status: 'unpaid' },
+        include: [
+          { model: Expense, required: true, where: { groupId }, attributes: ['id', 'groupId'] },
+          { model: User, as: 'Payer', attributes: ['id', 'username'] },
+          { model: User, as: 'Debtor', attributes: ['id', 'username'] }
+        ]
+      });
+
+      let balance = 0;
+      for (const debt of unpaidDebts) {
+        const amount = Number(debt.amount) || 0;
+        const payerId = debt.Payer?.id;
+        const debtorId = debt.Debtor?.id;
+
+        if (payerId == null || debtorId == null) continue;
+
+        if(payerId === userId){
+          balance += amount
+        }
+        if(debtorId === userId){
+          balance -=amount
+        }
+      }
+
+      return {
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        members: members.length, 
+        balance: balance, 
+        lastActivity: group.createdAt,
+        icon: '👥'
+      }
     }));
 
     res.json({
@@ -512,3 +544,4 @@ export async function markDebtAsPaid(req, res, next) {
     });
   }
 }
+  

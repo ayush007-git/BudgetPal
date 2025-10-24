@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 import Group from './group.js';
-import User from './user.js';
+import User from './User.js';
 
 const Expense = sequelize.define('Expense', {
   id: {
