@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import CreateGroup from './pages/CreateGroup';
 import GroupDetails from './pages/GroupDetails';
 import Settlement from './pages/Settlement';
+import AllSettlements from './pages/AllSettlements';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
 import AddExpense from './pages/AddExpense';
@@ -23,6 +24,7 @@ function App() {
           <Route path="/create-group" element={<CreateGroup />} />
           <Route path="/group/:groupId" element={<GroupDetails />} />
           <Route path="/settlement/:groupId" element={<Settlement />} />
+          <Route path="/all-settlements" element={<AllSettlements />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/group/:groupId/add-expense" element={<AddExpense />} />

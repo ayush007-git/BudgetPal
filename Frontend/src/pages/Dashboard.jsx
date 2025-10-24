@@ -98,11 +98,65 @@ export default function Dashboard() {
     }
   };
 
-  const handleViewAllBalances = () => {
-    if (groups.length > 0) {
-      navigate(`/settlement/${groups[0].id}`);
-    } else {
-      alert('No groups available to view balances');
+  const handleViewAllBalances = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to view settlements');
+        return;
+      }
+
+      // Get all user's groups first
+      const groupsResponse = await fetch(`${API_BASE_URL}/api/groups`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!groupsResponse.ok) {
+        throw new Error('Failed to fetch groups');
+      }
+
+      const groupsData = await groupsResponse.json();
+      const userGroups = groupsData.data?.groups || [];
+
+      if (userGroups.length === 0) {
+        navigate('/all-settlements', { state: { settlements: [] } });
+        return;
+      }
+
+      // Get settlements for each group
+      const allSettlements = [];
+      
+      for (const group of userGroups) {
+        try {
+          const balanceResponse = await fetch(`${API_BASE_URL}/api/groups/${group.id}/balance`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (balanceResponse.ok) {
+            const balanceData = await balanceResponse.json();
+            const groupSettlements = balanceData.map(settlement => ({
+              ...settlement,
+              groupName: group.name,
+              groupId: group.id
+            }));
+            allSettlements.push(...groupSettlements);
+          }
+        } catch (groupError) {
+          console.error(`Error fetching balance for group ${group.id}:`, groupError);
+        }
+      }
+
+      navigate('/all-settlements', { state: { settlements: allSettlements } });
+
+    } catch (error) {
+      console.error('Error fetching settlements:', error);
+      alert(`Failed to fetch settlements: ${error.message}`);
     }
   };
 
@@ -124,7 +178,6 @@ export default function Dashboard() {
         </div>
         <div className="icons">
           <span onClick={handleNotifications} title="Notifications">🔔</span>
-          <span onClick={handleSettings} title="Settings">⚙️</span>
           <span onClick={handleProfile} title="Profile">👤</span>
         </div>
       </div>
@@ -136,16 +189,7 @@ export default function Dashboard() {
       </div>
 
       {/* Financial Summary */}
-      <div className="summary">
-        <div>
-          <h3>💲 Financial Summary</h3>
-          <p>Total Balance</p>
-          <p className={totalBalance >= 0 ? "positive" : "negative"}>
-            {totalBalance >= 0 ? `+₹${totalBalance.toFixed(2)}` : `-₹${Math.abs(totalBalance).toFixed(2)}`}
-          </p>
-        </div>
-        <button className="settle-btn" onClick={handleSettleUp}>Settle Up</button>
-      </div>
+      
 
       {/* Groups */}
       <div className="groups">
@@ -171,7 +215,6 @@ export default function Dashboard() {
                     ? `You are owed ₹${g.balance.toFixed(2)}`
                     : `You owe ₹${Math.abs(g.balance).toFixed(2)}`}
                 </p>
-                <p className="last-activity">📅 Last activity {g.lastActivity}</p>
                 <button onClick={() => handleViewGroupDetails(g.id)}>View Details</button>
               </div>
             ))
@@ -183,8 +226,6 @@ export default function Dashboard() {
       <div className="actions">
         <h3>Quick Actions</h3>
         <div className="action-list">
-          <button onClick={handleAddExpenses}>➕ Add Expenses</button>
-          <button onClick={handleInviteFriends}>👥 Invite Friends</button>
           <button onClick={handleViewAllBalances}>💲 View all balances</button>
           <button onClick={handleRecentActivity}>📅 Recent activity</button>
         </div>
