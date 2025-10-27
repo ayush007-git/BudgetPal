@@ -120,6 +120,16 @@
   box-shadow: 0 6px 20px rgba(255, 212, 59, 0.4);
 }
 
+.header-action-btn.chat {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.header-action-btn.chat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
 .header-action-btn.delete {
   background: linear-gradient(135deg, #FF5252, #c62828);
   color: white;
@@ -623,4 +633,33 @@
   .expense-amount {
     padding: 15px;
   }
+}
+
+/* User Dropdown Integration */
+.add-member-dropdown {
+  margin-top: 8px;
+}
+
+.add-member-dropdown .dropdown-trigger {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.add-member-dropdown.open .dropdown-trigger {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.settlement-dropdown {
+  margin-top: 8px;
+}
+
+.settlement-dropdown .dropdown-trigger {
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.settlement-dropdown.open .dropdown-trigger {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }

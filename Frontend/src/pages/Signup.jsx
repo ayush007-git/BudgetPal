@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Auth.css'; 
+import '../styles/Auth.css';
 import { API_BASE_URL } from '../config';
+import { useToast } from '../components/ToastProvider';
 import logo from '../assets/logo.jpg';
 
 const Signup = () => {
-  const navigate = useNavigate(); 
-  
+  const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -36,15 +37,16 @@ const Signup = () => {
       const data = await res.json();
 
       if (!res.ok || !data?.success) {
-        alert(data?.message || 'Signup failed');
+        showError(data?.message || 'Signup failed');
         return;
       }
 
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('user', JSON.stringify(data.data.user));
+      showSuccess('Account created successfully!');
       navigate('/dashboard'); 
     } catch (err) {
-      alert('Network error. Please try again.');
+      showError('Network error. Please try again.');
     }
   };
 

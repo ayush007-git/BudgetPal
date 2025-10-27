@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import '../styles/CreateGroup.css';
+import { useToast } from '../components/ToastProvider';
 
 const CreateGroup = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -62,14 +64,14 @@ const CreateGroup = () => {
       const data = await res.json();
 
       if (!res.ok || !data?.success) {
-        alert(data?.message || 'Failed to create group');
+        showError(data?.message || 'Failed to create group');
         return;
       }
 
-      alert('Group created successfully!');
+      showSuccess('Group created successfully!');
       navigate('/dashboard');
     } catch (err) {
-      alert('Network error. Please try again.');
+      showError('Network error. Please try again.');
     } finally {
       setLoading(false);
     }

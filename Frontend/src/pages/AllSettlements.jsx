@@ -1,9 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Settlement.css';
+import UniversalSearch from '../components/UniversalSearch';
 
 const AllSettlements = () => {
     const navigate = useNavigate();
+
+    const handleSearch = (searchResult) => {
+        if (!searchResult) return;
+        
+        // Navigate based on search result type
+        switch (searchResult.type) {
+            case 'group':
+                navigate(`/group/${searchResult.id}`);
+                break;
+            case 'user':
+                console.log('User selected:', searchResult);
+                break;
+            case 'expense':
+                if (searchResult.metadata?.groupName) {
+                    navigate(`/group/${searchResult.id}`);
+                }
+                break;
+            default:
+                console.log('Unknown search result type:', searchResult);
+        }
+    };
 
     return (
         <div className="all-settlements-page">
@@ -17,6 +39,14 @@ const AllSettlements = () => {
                     <p className="page-subtitle">Track outstanding balances across all your groups.</p>
                 </div>
             </div>
+
+            {/* Universal Search */}
+            <UniversalSearch
+                onSearch={handleSearch}
+                placeholder="Search groups, users, expenses..."
+                searchTypes={['groups', 'users', 'expenses']}
+                className="settlements-search"
+            />
 
             {/* Summary Cards */}
             <div className="summary-cards">

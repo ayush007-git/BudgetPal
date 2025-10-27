@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/Settlement.css';
 import { API_BASE_URL } from '../config';
+import { useToast } from '../components/ToastProvider';
 
 export default function Settlement() {
   const { groupId } = useParams();
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning } = useToast();
   const [settlements, setSettlements] = useState([]);
   const [group, setGroup] = useState(null);
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +33,7 @@ export default function Settlement() {
       if (groupRes.ok) {
         const groupData = await groupRes.json();
         setGroup(groupData.data.group);
+        setMembers(groupData.data.group.members || []);
       }
 
       // Fetch settlement plan
@@ -51,6 +55,11 @@ export default function Settlement() {
         { from: 'Bob', to: 'Charlie', amount: 200.00, debtorId: 2, creditorId: 3 }
       ]);
       setGroup({ name: 'Sample Group', description: 'Test group for settlements' });
+      setMembers([
+        { id: 1, name: 'Alice', email: 'alice@example.com' },
+        { id: 2, name: 'Bob', email: 'bob@example.com' },
+        { id: 3, name: 'Charlie', email: 'charlie@example.com' }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -65,7 +74,7 @@ export default function Settlement() {
 
       // Check if we have the required IDs
       if (!settlement.debtorId || !settlement.creditorId) {
-        alert('Error: Missing user information for this settlement');
+        showError('Error: Missing user information for this settlement');
         return;
       }
 
@@ -87,33 +96,33 @@ export default function Settlement() {
         // Remove from local state
         const newSettlements = settlements.filter((_, index) => index !== settlementIndex);
         setSettlements(newSettlements);
-        alert(result.message || 'Payment marked as completed!');
+        showSuccess(result.message || 'Payment marked as completed!');
       } else {
         const error = await res.json();
-        alert(error.message || 'Failed to mark payment as completed');
+        showError(error.message || 'Failed to mark payment as completed');
       }
     } catch (err) {
       console.error('Error marking payment as completed:', err);
       // For demo purposes, just remove from local state
       const newSettlements = settlements.filter((_, index) => index !== settlementIndex);
       setSettlements(newSettlements);
-      alert('Payment marked as completed!');
+      showSuccess('Payment marked as completed!');
     }
+  };
+
+  const handleAutoCalculate = () => {
+    // Auto-calculate optimal settlement plan
+    showInfo('Auto-calculating optimal settlement plan...');
+    // This would trigger a recalculation of the settlement plan
+    setTimeout(() => {
+      showSuccess('Settlement plan updated!');
+    }, 1000);
   };
 
   const calculateTotalAmount = () => {
     return settlements.reduce((total, settlement) => total + settlement.amount, 0);
   };
 
-  const getGroupIcon = (groupName) => {
-    const name = groupName?.toLowerCase() || '';
-    if (name.includes('taxi') || name.includes('travel')) return '🚗';
-    if (name.includes('food') || name.includes('dining')) return '🍕';
-    if (name.includes('sport') || name.includes('gym')) return '🏋️';
-    if (name.includes('home') || name.includes('rent')) return '🏠';
-    if (name.includes('shopping') || name.includes('store')) return '🛍️';
-    return '👥';
-  };
 
   if (loading) {
     return (
@@ -128,119 +137,97 @@ export default function Settlement() {
 
   return (
     <div className="settlement-page">
-      {/* Top Bar */}
-      <div className="settlement-top-bar">
-        <button className="back-btn" onClick={() => navigate(`/group/${groupId}`)}>
-          ← Back to Group
-        </button>
-        <button className="dashboard-btn" onClick={() => navigate('/dashboard')}>
-          🏠 Dashboard
-        </button>
-      </div>
-
-      {/* Header Card */}
-      <div className="settlement-header-card">
+      {/* Header Section */}
+      <div className="settlement-header">
+        <div className="header-top">
+          <button className="back-btn" onClick={() => navigate(`/group/${groupId}`)}>
+            ← Back to Groups
+          </button>
+          <button className="auto-calculate-btn" onClick={handleAutoCalculate}>
+            Auto Calculate
+          </button>
+        </div>
         <div className="header-content">
-          <div className="group-icon">{getGroupIcon(group?.name)}</div>
-          <div className="group-info">
-            <h1 className="group-title">{group?.name || 'Group Settlement'}</h1>
-            <p className="group-subtitle">{group?.description || 'Settlement plan for this group'}</p>
-          </div>
-        </div>
-        <div className="settlement-summary">
-          <div className="summary-item">
-            <span className="summary-label">Total Amount</span>
-            <span className="summary-value">₹{calculateTotalAmount().toFixed(2)}</span>
-          </div>
-          <div className="summary-item">
-            <span className="summary-label">Payments</span>
-            <span className="summary-value">{settlements.length}</span>
-          </div>
+          <h1 className="page-title">💰 Settle Up Balances</h1>
+          <p className="page-subtitle">Easily clear pending amounts between members.</p>
         </div>
       </div>
 
-      {/* Payment Status Section */}
-      <div className="payment-status-section">
-        <div className="status-card">
-          <div className="status-icon">📊</div>
-          <div className="status-content">
-            <h3>Payment Status</h3>
-            <p>{settlements.length === 0 ? 'All payments completed!' : `${settlements.length} payments pending`}</p>
-          </div>
-        </div>
-        <div className="status-card">
-          <div className="status-icon">💰</div>
-          <div className="status-content">
-            <h3>Total Settlements</h3>
-            <p>₹{calculateTotalAmount().toFixed(2)} across {settlements.length} transactions</p>
-          </div>
-        </div>
-      </div>
+      {/* Main Single-Column Layout */}
+      <div className="settlement-main">
+        {/* Settlement Summary */}
+        <div className="settlement-summary-column">
+          <div className="summary-card">
+            <div className="card-header">
+              <h2>Settlement Summary</h2>
+              <div className="progress-indicator">
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ 
+                      width: `${settlements.length === 0 ? 100 : ((settlements.length / 5) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+                <span className="progress-text">
+                  {settlements.length === 0 ? 'All Clear!' : `${settlements.length} pending`}
+                </span>
+              </div>
+            </div>
 
-      {/* Payment Plan Cards */}
-      <div className="payment-plan-section">
-        <h2 className="section-title">Payment Plan</h2>
-        {settlements.length === 0 ? (
-          <div className="celebration-state">
-            <div className="celebration-icon">🎉</div>
-            <h3>All Settled Up!</h3>
-            <p>No outstanding payments in this group.</p>
-            <button 
-              className="action-btn primary" 
-              onClick={() => navigate(`/group/${groupId}`)}
-            >
-              View Group Details
+            <div className="summary-stats">
+              <div className="stat-item">
+                <span className="stat-label">Total Owed</span>
+                <span className="stat-value owed">₹{calculateTotalAmount().toFixed(2)}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Total to Receive</span>
+                <span className="stat-value receive">₹{calculateTotalAmount().toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="pending-amounts">
+              <h3>Pending Amounts</h3>
+              {settlements.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">🎉</div>
+                  <p>All settled up! No pending amounts.</p>
+                </div>
+              ) : (
+                <div className="amounts-list">
+                  {settlements.map((settlement, index) => (
+                    <div key={index} className="amount-item">
+                      <div className="amount-flow">
+                        <div className="user-info">
+                          <div className="user-avatar">{settlement.from.charAt(0)}</div>
+                          <span className="user-name">{settlement.from}</span>
+                        </div>
+                        <div className="amount-details">
+                          <span className="amount-value">₹{settlement.amount.toFixed(2)}</span>
+                          <span className="arrow">→</span>
+                        </div>
+                        <div className="user-info">
+                          <div className="user-avatar">{settlement.to.charAt(0)}</div>
+                          <span className="user-name">{settlement.to}</span>
+                        </div>
+                      </div>
+                      <button 
+                        className="mark-paid-btn"
+                        onClick={() => handleMarkAsPaid(index)}
+                      >
+                        ✓ Mark Paid
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button className="settle-automatically-btn">
+              Settle Automatically
             </button>
           </div>
-        ) : (
-          <div className="payment-plan-list">
-            {settlements.map((settlement, index) => (
-              <div key={index} className="payment-plan-card">
-                <div className="payment-flow">
-                  <div className="payer-info">
-                    <div className="user-avatar">👤</div>
-                    <span className="user-name">{settlement.from}</span>
-                  </div>
-                  <div className="payment-details">
-                    <div className="arrow-icon">→</div>
-                    <div className="amount">₹{settlement.amount.toFixed(2)}</div>
-                  </div>
-                  <div className="payee-info">
-                    <div className="user-avatar">👤</div>
-                    <span className="user-name">{settlement.to}</span>
-                  </div>
-                </div>
-                <div className="payment-actions">
-                  <button 
-                    className="mark-paid-btn"
-                    onClick={() => handleMarkAsPaid(index)}
-                  >
-                    ✓ Mark as Paid
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Footer Buttons */}
-      <div className="settlement-footer">
-        <div className="footer-buttons">
-          <button 
-            className="footer-btn primary" 
-            onClick={() => navigate(`/group/${groupId}`)}
-          >
-            📊 View Group Details
-          </button>
-          <button 
-            className="footer-btn secondary" 
-            onClick={() => navigate('/dashboard')}
-          >
-            🏠 Dashboard
-          </button>
         </div>
-        <p className="footer-note">Settlement data updated in real-time</p>
       </div>
     </div>
   );

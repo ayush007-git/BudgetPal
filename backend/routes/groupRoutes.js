@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createGroup, addMemberToGroup, getGroupDetails, calculateGroupBalance, getUserGroups, markDebtAsPaid, deleteGroup } from '../controllers/groupController.js';
+import { createGroup, addMemberToGroup, getGroupDetails, calculateGroupBalance, getUserGroups, markDebtAsPaid, deleteGroup, getGroupMessages, sendGroupMessage } from '../controllers/groupController.js';
 import { authenticateToken } from '../middleware/auth.js';
 import expenseRoutes from './expenseRoutes.js';
 
@@ -22,6 +22,12 @@ router.get('/:groupId/balance', authenticateToken, calculateGroupBalance);
 
 // POST /:groupId/mark-paid - mark a debt as paid (requires authentication)
 router.post('/:groupId/mark-paid', authenticateToken, markDebtAsPaid);
+
+// GET /:groupId/messages - get chat messages for a group (requires authentication)
+router.get('/:groupId/messages', authenticateToken, getGroupMessages);
+
+// POST /:groupId/messages - send a message to a group (requires authentication)
+router.post('/:groupId/messages', authenticateToken, sendGroupMessage);
 
 // DELETE /:groupId - delete a group (requires authentication)
 router.delete('/:groupId', authenticateToken, deleteGroup);
