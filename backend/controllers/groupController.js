@@ -545,3 +545,54 @@ export async function markDebtAsPaid(req, res, next) {
   }
 }
   
+export async function deleteGroup(req, res, next) {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User authentication required'
+      });
+    }
+
+    // Import models
+    const { default: Group } = await import('../models/group.js');
+
+    // Find the group
+    const group = await Group.findByPk(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    // Verify user is a member of the group
+    const members = await group.getUsers();
+    const isMember = members.some(member => member.id === userId);
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You are not a member of this group.'
+      });
+    }
+
+    // Delete the group (this will cascade delete related expenses and debts due to foreign key constraints)
+    await group.destroy();
+
+    res.json({
+      success: true,
+      message: 'Group deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete group error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while deleting group'
+    });
+  }
+}
+  

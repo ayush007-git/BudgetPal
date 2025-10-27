@@ -9,15 +9,9 @@ export default function GroupDetails() {
   const [group, setGroup] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [members, setMembers] = useState([]);
-  const [balance, setBalance] = useState([]);
+  const [_balance, setBalance] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddExpense, setShowAddExpense] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
-  const [newExpense, setNewExpense] = useState({
-    description: '',
-    totalAmount: '',
-    screenshotUrl: ''
-  });
   const [newMember, setNewMember] = useState({
     username: ''
   });
@@ -63,38 +57,6 @@ export default function GroupDetails() {
     }
   };
 
-  const handleAddExpense = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user'));
-      
-      const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/expenses`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...newExpense,
-          totalAmount: parseFloat(newExpense.totalAmount),
-          paidById: user.id
-        })
-      });
-
-      if (res.ok) {
-        setNewExpense({ description: '', totalAmount: '', screenshotUrl: '' });
-        setShowAddExpense(false);
-        fetchGroupDetails(); // Refresh data
-      } else {
-        const error = await res.json();
-        alert(error.message || 'Failed to add expense');
-      }
-    } catch (err) {
-      alert('Error adding expense');
-    }
-  };
-
   const handleAddMember = async (e) => {
     e.preventDefault();
     try {
@@ -119,10 +81,53 @@ export default function GroupDetails() {
         const error = await res.json();
         alert(error.message || 'Failed to add member');
       }
-    } catch (err) {
+    } catch {
       alert('Error adding member');
     }
   };
+
+  const handleDeleteGroup = async () => {
+    if (!window.confirm('Are you sure you want to delete this group? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        alert('Group deleted successfully');
+        navigate('/dashboard');
+      } else {
+        const error = await res.json();
+        alert(error.message || 'Failed to delete group');
+      }
+    } catch {
+      alert('Error deleting group');
+    }
+  };
+
+  // Calculate summary stats
+  const calculateStats = () => {
+    const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.totalAmount || 0), 0);
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const userBalance = members.find(m => m.username === currentUser?.username)?.balance || 0;
+    
+    return {
+      totalExpenses,
+      membersCount: members.length,
+      userBalance,
+      totalBalance: members.reduce((sum, m) => sum + Math.abs(m.balance || 0), 0)
+    };
+  };
+
+  const stats = calculateStats();
 
   if (loading) {
     return <div className="loading">Loading group details...</div>;
@@ -133,139 +138,143 @@ export default function GroupDetails() {
   }
 
   return (
-    <div className="group-details">
-      {/* Header */}
-      <div className="group-header">
+    <div className="group-details-page">
+      {/* Header Section */}
+      <div className="group-header-section">
         <button className="back-btn" onClick={() => navigate('/dashboard')}>
-          ← Back to Dashboard
+          ← Dashboard
         </button>
-        <h1>{group.name}</h1>
-        <p>{group.description}</p>
+        <div className="header-content">
+          <h1 className="group-title">{group.name}</h1>
+          <p className="group-subtitle">{group.description || 'Group shared expenses'}</p>
+        </div>
+        <div className="header-actions">
+          <button 
+            className="header-action-btn primary" 
+            onClick={() => navigate(`/group/${groupId}/add-expense`)}
+          >
+            ➕ Add Expense
+          </button>
+          <button 
+            className="header-action-btn secondary" 
+            onClick={() => setShowAddMember(true)}
+          >
+            👥 Add Member
+          </button>
+          <button 
+            className="header-action-btn tertiary" 
+            onClick={() => navigate(`/settlement/${groupId}`)}
+          >
+            ⚖️ Settlement
+          </button>
+          <button 
+            className="header-action-btn delete" 
+            onClick={handleDeleteGroup}
+          >
+            🗑️ Delete Group
+          </button>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="quick-actions">
-        <button 
-          className="action-btn primary" 
-          onClick={() => navigate(`/group/${groupId}/add-expense`)}
-        >
-          ➕ Add Expense
-        </button>
-        <button 
-          className="action-btn secondary" 
-          onClick={() => setShowAddMember(true)}
-        >
-          👥 Add Member
-        </button>
-        <button 
-          className="action-btn tertiary" 
-          onClick={() => navigate(`/settlement/${groupId}`)}
-        >
-          💲 View Settlement
-        </button>
-      </div>
-
-      {/* Balance Summary */}
-      {balance.length > 0 && (
-        <div className="balance-summary">
-          <h3>💰 Settlement Plan</h3>
-          <div className="settlements">
-            {balance.map((settlement, index) => (
-              <div key={index} className="settlement-item">
-                <span className="from">{settlement.from}</span>
-                <span className="arrow">→</span>
-                <span className="to">{settlement.to}</span>
-                <span className="amount">₹{settlement.amount.toFixed(2)}</span>
-              </div>
-            ))}
+      {/* Summary Cards */}
+      <div className="summary-cards">
+        <div className="summary-card card-1">
+          <div className="card-icon">💰</div>
+          <div className="card-content">
+            <h3>Total Balance</h3>
+            <p className="card-value">₹{stats.totalBalance.toFixed(2)}</p>
           </div>
         </div>
-      )}
-
-      {/* Members */}
-      <div className="members-section">
-        <h3>👥 Members</h3>
-        <div className="members-list">
-          {members.map((member, index) => (
-            <div key={index} className="member-item">
-              <span className="member-name">{member.username}</span>
-              <span className="member-balance">
-                {member.balance >= 0 ? `+₹${member.balance.toFixed(2)}` : `-₹${Math.abs(member.balance).toFixed(2)}`}
-              </span>
-            </div>
-          ))}
+        <div className="summary-card card-2">
+          <div className="card-icon">👥</div>
+          <div className="card-content">
+            <h3>Members</h3>
+            <p className="card-value">{stats.membersCount} Members</p>
+          </div>
+        </div>
+        <div className="summary-card card-3">
+          <div className="card-icon">📉</div>
+          <div className="card-content">
+            <h3>Total Expenses</h3>
+            <p className="card-value">₹{stats.totalExpenses.toFixed(2)}</p>
+          </div>
+        </div>
+        <div className="summary-card card-4">
+          <div className="card-icon">💸</div>
+          <div className="card-content">
+            <h3>Your Balance</h3>
+            <p className={`card-value ${stats.userBalance >= 0 ? 'positive' : 'negative'}`}>
+              {stats.userBalance >= 0 ? '+' : ''}₹{Math.abs(stats.userBalance).toFixed(2)}
+            </p>
+            <p className="card-label">{stats.userBalance >= 0 ? 'You are owed' : 'You owe'}</p>
+          </div>
         </div>
       </div>
 
-      {/* Expenses */}
+      {/* Members Section */}
+      <div className="members-section">
+        <div className="section-header">
+          <h2>👥 Group Members</h2>
+        </div>
+        <div className="members-grid">
+          {members.map((member, index) => {
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const isCurrentUser = member.username === currentUser?.username;
+            return (
+              <div key={index} className={`member-card ${isCurrentUser ? 'current-user' : ''}`}>
+                <div className="member-avatar">
+                  {member.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="member-info">
+                  <h4>{member.username} {isCurrentUser && <span className="you-badge">You</span>}</h4>
+                  <p className={`member-balance ${member.balance >= 0 ? 'positive' : 'negative'}`}>
+                    {member.balance >= 0 ? 'Owed' : 'Owes'} ₹{Math.abs(member.balance || 0).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recent Expenses Section */}
       <div className="expenses-section">
-        <h3>📊 Recent Expenses</h3>
+        <div className="section-header">
+          <h2>💸 Recent Expenses</h2>
+        </div>
         <div className="expenses-list">
           {expenses.length === 0 ? (
-            <p className="no-expenses">No expenses yet. Add one to get started!</p>
+            <div className="empty-state">
+              <p>📭 No expenses yet. Add one to get started!</p>
+            </div>
           ) : (
-            expenses.map((expense, index) => (
-              <div key={index} className="expense-item">
-                <div className="expense-info">
+            expenses.slice(0, 10).map((expense, index) => (
+              <div key={index} className="expense-card">
+                <div className="expense-color-strip"></div>
+                <div className="expense-content">
                   <h4>{expense.description}</h4>
-                  <p>Paid by {expense.paidBy?.username}</p>
-                  <p className="expense-date">{new Date(expense.date).toLocaleDateString()}</p>
+                  <p className="expense-meta">
+                    Paid by <strong>{expense.paidBy?.username || 'Unknown'}</strong> • {new Date(expense.date).toLocaleDateString()}
+                  </p>
+                  <div className="expense-members">
+                    {expense.splits && expense.splits.length > 0 ? (
+                      <span>{expense.splits.length} {expense.splits.length === 1 ? 'member' : 'members'} involved</span>
+                    ) : (
+                      <span>Equal split among all members</span>
+                    )}
+                  </div>
                 </div>
-                <div className="expense-amount">
-                  ₹{expense.totalAmount.toFixed(2)}
-                </div>
+                <div className="expense-amount">₹{expense.totalAmount.toFixed(2)}</div>
               </div>
             ))
           )}
         </div>
       </div>
 
-      {/* Add Expense Modal */}
-      {showAddExpense && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Add New Expense</h3>
-            <form onSubmit={handleAddExpense}>
-              <div className="form-group">
-                <label>Description</label>
-                <input
-                  type="text"
-                  value={newExpense.description}
-                  onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Amount</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={newExpense.totalAmount}
-                  onChange={(e) => setNewExpense({...newExpense, totalAmount: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Receipt URL (optional)</label>
-                <input
-                  type="url"
-                  value={newExpense.screenshotUrl}
-                  onChange={(e) => setNewExpense({...newExpense, screenshotUrl: e.target.value})}
-                />
-              </div>
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowAddExpense(false)}>Cancel</button>
-                <button type="submit">Add Expense</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* Add Member Modal */}
       {showAddMember && (
-        <div className="modal-overlay">
-          <div className="modal">
+        <div className="modal-overlay" onClick={() => setShowAddMember(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Add Member to Group</h3>
             <form onSubmit={handleAddMember}>
               <div className="form-group">
@@ -274,6 +283,7 @@ export default function GroupDetails() {
                   type="text"
                   value={newMember.username}
                   onChange={(e) => setNewMember({...newMember, username: e.target.value})}
+                  placeholder="Enter username"
                   required
                 />
               </div>
