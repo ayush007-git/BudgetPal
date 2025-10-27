@@ -9,6 +9,7 @@ export default function AddExpense() {
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     description: '',
     totalAmount: '',
@@ -19,6 +20,8 @@ export default function AddExpense() {
   const [customSplits, setCustomSplits] = useState({});
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    setCurrentUser(user);
     fetchGroupData();
   }, [groupId]);
 
@@ -78,6 +81,41 @@ export default function AddExpense() {
     return Object.values(customSplits).reduce((sum, amount) => sum + amount, 0);
   };
 
+  const isCustomSplitValid = () => {
+    if (formData.splitType !== 'custom' || !formData.totalAmount) return true;
+    const customTotal = calculateCustomSplitTotal();
+    const expectedTotal = parseFloat(formData.totalAmount);
+    return Math.abs(customTotal - expectedTotal) < 0.01;
+  };
+
+  const calculateUserOwed = () => {
+    if (!currentUser || !formData.totalAmount || !formData.paidById) return 0;
+    
+    const totalAmount = parseFloat(formData.totalAmount);
+    const paidById = parseInt(formData.paidById);
+    
+    if (formData.splitType === 'equal') {
+      const perPerson = calculateEqualSplit();
+      if (currentUser.id === paidById) {
+        // User paid, owes (total - their share)
+        return perPerson * (members.length - 1);
+      } else {
+        // User owes their share
+        return perPerson;
+      }
+    } else {
+      // Custom split
+      const userSplit = customSplits[currentUser.id] || 0;
+      if (currentUser.id === paidById) {
+        // User paid, owes (total - their split)
+        return totalAmount - userSplit;
+      } else {
+        // User owes their split
+        return userSplit;
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -133,29 +171,53 @@ export default function AddExpense() {
   };
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="add-expense-page">
+        <div className="loading">Loading...</div>
+      </div>
+    );
   }
 
   if (!group) {
-    return <div className="error">Group not found</div>;
+    return (
+      <div className="add-expense-page">
+        <div className="error">Group not found</div>
+      </div>
+    );
   }
+
+  const userOwed = calculateUserOwed();
+  const isPayer = currentUser && parseInt(formData.paidById) === currentUser.id;
+  const splitSummary = isPayer 
+    ? `You paid ₹${formData.totalAmount || '0.00'}, members owe you ₹${userOwed.toFixed(2)}`
+    : `You will owe ₹${userOwed.toFixed(2)}`;
 
   return (
     <div className="add-expense-page">
       {/* Header */}
       <div className="add-expense-header">
-        <button className="back-btn" onClick={() => navigate(`/group/${groupId}`)}>
-          ← Back to Group
-        </button>
-        <h1>Add New Expense</h1>
-        <p>for {group.name}</p>
+        <div className="header-left">
+          <button className="dashboard-btn" onClick={() => navigate('/dashboard')}>
+            🏠 Dashboard
+          </button>
+        </div>
+        <div className="header-center">
+          <h1>💰 Add New Expense</h1>
+          <p>for {group.name}</p>
+        </div>
+        <div className="header-right">
+          <button className="back-btn" onClick={() => navigate(`/group/${groupId}`)}>
+            ← Back to Group
+          </button>
+        </div>
       </div>
 
       {/* Form */}
       <div className="add-expense-form">
         <form onSubmit={handleSubmit}>
+          {/* Expense Details Section */}
           <div className="form-section">
-            <h3>Expense Details</h3>
+            <h3>🧾 Expense Details</h3>
             
             <div className="form-group">
               <label>Description *</label>
@@ -164,22 +226,24 @@ export default function AddExpense() {
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="e.g., Dinner at restaurant"
+                placeholder="e.g., Dinner at restaurant 🍽️"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label>Total Amount *</label>
-              <input
-                type="number"
-                step="0.01"
-                name="totalAmount"
-                value={formData.totalAmount}
-                onChange={handleInputChange}
-                placeholder="0.00"
-                required
-              />
+              <label>Total Amount (₹) *</label>
+              <div className="amount-input-wrapper">
+                <input
+                  type="number"
+                  step="0.01"
+                  name="totalAmount"
+                  value={formData.totalAmount}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
             </div>
 
             <div className="form-group">
@@ -200,7 +264,7 @@ export default function AddExpense() {
             </div>
 
             <div className="form-group">
-              <label>Receipt URL (optional)</label>
+              <label>Receipt Upload / URL</label>
               <input
                 type="url"
                 name="screenshotUrl"
@@ -211,8 +275,9 @@ export default function AddExpense() {
             </div>
           </div>
 
+          {/* Split Options Section */}
           <div className="form-section">
-            <h3>Split Options</h3>
+            <h3>⚖️ Split Options</h3>
             
             <div className="split-type-selection">
               <label className="radio-option">
@@ -223,7 +288,7 @@ export default function AddExpense() {
                   checked={formData.splitType === 'equal'}
                   onChange={handleInputChange}
                 />
-                <span>Split equally among all members</span>
+                <span>🟢 Split equally among all members</span>
               </label>
               
               <label className="radio-option">
@@ -234,17 +299,23 @@ export default function AddExpense() {
                   checked={formData.splitType === 'custom'}
                   onChange={handleInputChange}
                 />
-                <span>Custom split amounts</span>
+                <span>🟠 Custom split amounts</span>
               </label>
             </div>
 
-            {formData.splitType === 'equal' && (
+            {formData.splitType === 'equal' && formData.totalAmount && (
               <div className="equal-split-info">
                 <p>Each member will pay: <strong>₹{calculateEqualSplit().toFixed(2)}</strong></p>
                 <div className="member-splits">
                   {members.map(member => (
-                    <div key={member.id} className="split-item">
-                      <span className="member-name">{member.username}</span>
+                    <div 
+                      key={member.id} 
+                      className={`split-item ${parseInt(formData.paidById) === member.id ? 'payer' : ''}`}
+                    >
+                      <span className="member-name">
+                        {member.username}
+                        {parseInt(formData.paidById) === member.id && ' (Paid)'}
+                      </span>
                       <span className="split-amount">₹{calculateEqualSplit().toFixed(2)}</span>
                     </div>
                   ))}
@@ -255,12 +326,15 @@ export default function AddExpense() {
             {formData.splitType === 'custom' && (
               <div className="custom-split-section">
                 <h4>Custom Split Amounts</h4>
-                <p>Total must equal expense amount: <strong>₹{formData.totalAmount || '0.00'}</strong></p>
+                <p>Total must equal: <strong>₹{formData.totalAmount || '0.00'}</strong></p>
                 <p>Current total: <strong>₹{calculateCustomSplitTotal().toFixed(2)}</strong></p>
                 
                 {members.map(member => (
                   <div key={member.id} className="custom-split-item">
-                    <label>{member.username}</label>
+                    <label>
+                      {member.username}
+                      {parseInt(formData.paidById) === member.id && ' (Paid)'}
+                    </label>
                     <input
                       type="number"
                       step="0.01"
@@ -270,10 +344,25 @@ export default function AddExpense() {
                     />
                   </div>
                 ))}
+
+                {formData.totalAmount && (
+                  <div className={`total-check ${isCustomSplitValid() ? 'valid' : 'invalid'}`}>
+                    {isCustomSplitValid() 
+                      ? '✓ Totals match!' 
+                      : '✗ Total does not match expense amount'}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!formData.totalAmount && (
+              <div className="empty-state">
+                Enter an amount to see the split breakdown.
               </div>
             )}
           </div>
 
+          {/* Action Buttons */}
           <div className="form-actions">
             <button type="button" onClick={() => navigate(`/group/${groupId}`)}>
               Cancel
@@ -284,6 +373,13 @@ export default function AddExpense() {
           </div>
         </form>
       </div>
+
+      {/* Summary Chip */}
+      {formData.totalAmount && formData.paidById && (
+        <div className="summary-chip">
+          {splitSummary}
+        </div>
+      )}
     </div>
   );
 }

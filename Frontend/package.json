@@ -6,7 +6,6 @@
   "engines": {
     "node": "20.x"
   },
-
   "scripts": {
     "dev": "vite",
     "build": "ROLLUP_SKIP_NODEJS_NATIVE=1 vite build",

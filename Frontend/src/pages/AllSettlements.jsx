@@ -1,76 +1,142 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import '../styles/Settlement.css';
 
 const AllSettlements = () => {
-    const location = useLocation();
     const navigate = useNavigate();
-    const settlements = location.state?.settlements || [];
 
     return (
-        <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ marginBottom: '20px' }}>
-                <button 
-                    onClick={() => navigate('/dashboard')}
-                    style={{ 
-                        padding: '8px 16px', 
-                        marginBottom: '20px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    ← Back to Dashboard
+        <div className="all-settlements-page">
+            {/* Header Section */}
+            <div className="settlements-header">
+                <button className="back-btn" onClick={() => navigate('/dashboard')}>
+                    ← Dashboard
                 </button>
-                <h2>All Settlements</h2>
-                <p style={{ color: '#666', marginBottom: '20px' }}>
-                    Outstanding balances across all your groups
-                </p>
-            </div>
-            
-            {settlements.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
-                    <h3 style={{ color: '#28a745', marginBottom: '8px' }}>All settled up!</h3>
-                    <p>No outstanding payments in any of your groups.</p>
+                <div className="header-content">
+                    <h1 className="page-title">All Settlements</h1>
+                    <p className="page-subtitle">Track outstanding balances across all your groups.</p>
                 </div>
-            ) : (
-                <div>
-                    <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: '#e7f3ff', borderRadius: '8px', border: '1px solid #b3d9ff' }}>
-                        <strong>Total settlements: {settlements.length}</strong>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="summary-cards">
+                <div className="summary-card card-1">
+                    <div className="card-icon">💸</div>
+                    <div className="card-content">
+                        <h3>Total Owed</h3>
+                        <p className="card-value">₹150.50</p>
                     </div>
-                    {settlements.map((settlement, index) => (
-                        <div 
-                            key={index}
-                            style={{
-                                border: '1px solid #ddd',
-                                borderRadius: '8px',
-                                padding: '16px',
-                                marginBottom: '12px',
-                                backgroundColor: '#f9f9f9',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                            }}
-                        >
-                            <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px', color: '#333' }}>
-                                {settlement.from} owes {settlement.to} ₹{settlement.amount}
-                            </div>
-                            <div style={{ fontSize: '14px', color: '#666', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>Group: {settlement.groupName}</span>
-                                <span style={{ 
-                                    backgroundColor: '#007bff', 
-                                    color: 'white', 
-                                    padding: '2px 8px', 
-                                    borderRadius: '12px', 
-                                    fontSize: '12px' 
-                                }}>
-                                    {settlement.groupId}
-                                </span>
+                </div>
+                <div className="summary-card card-2">
+                    <div className="card-icon">💰</div>
+                    <div className="card-content">
+                        <h3>Total To Receive</h3>
+                        <p className="card-value">₹75.25</p>
+                    </div>
+                </div>
+                <div className="summary-card card-3">
+                    <div className="card-icon">✅</div>
+                    <div className="card-content">
+                        <h3>Settled Groups</h3>
+                        <p className="card-value">2</p>
+                    </div>
+                </div>
+                <div className="summary-card card-4">
+                    <div className="card-icon">⏳</div>
+                    <div className="card-content">
+                        <h3>Pending Groups</h3>
+                        <p className="card-value">3</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Group Settlement Overview */}
+            <div className="settlements-section">
+                <h2 className="section-title">Group Balances</h2>
+                <div className="groups-list">
+                    <div className="group-card" style={{ borderLeftColor: '#FF5252' }}>
+                        <div className="group-info">
+                            <div className="group-icon">🚗</div>
+                            <div className="group-details">
+                                <h4 className="group-name">Taxi Group</h4>
+                                <p className="group-description">Shared taxi rides</p>
                             </div>
                         </div>
-                    ))}
+                        <div className="balance-info">
+                            <div className="balance-status" style={{ color: '#FF5252' }}>
+                                You Owe
+                            </div>
+                            <div className="balance-amount" style={{ color: '#FF5252' }}>
+                                ₹150.50
+                            </div>
+                        </div>
+                        <div className="group-actions">
+                            <button className="settle-btn">
+                                Settle Up
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="group-card" style={{ borderLeftColor: '#00C853' }}>
+                        <div className="group-info">
+                            <div className="group-icon">🍕</div>
+                            <div className="group-details">
+                                <h4 className="group-name">Foodies</h4>
+                                <p className="group-description">Dining out together</p>
+                            </div>
+                        </div>
+                        <div className="balance-info">
+                            <div className="balance-status" style={{ color: '#00C853' }}>
+                                You're Owed
+                            </div>
+                            <div className="balance-amount" style={{ color: '#00C853' }}>
+                                ₹75.25
+                            </div>
+                        </div>
+                        <div className="group-actions">
+                            <button className="settle-btn">
+                                Settle Up
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="group-card" style={{ borderLeftColor: '#9E9E9E' }}>
+                        <div className="group-info">
+                            <div className="group-icon">🏋️</div>
+                            <div className="group-details">
+                                <h4 className="group-name">Sports Club</h4>
+                                <p className="group-description">Gym and sports activities</p>
+                            </div>
+                        </div>
+                        <div className="balance-info">
+                            <div className="balance-status" style={{ color: '#9E9E9E' }}>
+                                Settled
+                            </div>
+                            <div className="balance-amount" style={{ color: '#9E9E9E' }}>
+                                ₹0.00
+                            </div>
+                        </div>
+                        <div className="group-actions">
+                            <button className="settle-btn">
+                                Settle Up
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="footer-actions">
+                <div className="action-buttons">
+                    <button className="action-btn secondary" onClick={() => navigate('/dashboard')}>
+                        📊 View Reports
+                    </button>
+                    <button className="action-btn secondary" onClick={() => window.print()}>
+                        📄 Export Summary
+                    </button>
+                </div>
+                <p className="data-note">Data updated on 27 Oct 2024</p>
+            </div>
         </div>
     );
 };

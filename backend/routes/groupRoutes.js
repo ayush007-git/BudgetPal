@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createGroup, addMemberToGroup, getGroupDetails, calculateGroupBalance, getUserGroups, markDebtAsPaid } from '../controllers/groupController.js';
+import { createGroup, addMemberToGroup, getGroupDetails, calculateGroupBalance, getUserGroups, markDebtAsPaid, deleteGroup } from '../controllers/groupController.js';
 import { authenticateToken } from '../middleware/auth.js';
 import expenseRoutes from './expenseRoutes.js';
 
@@ -22,6 +22,9 @@ router.get('/:groupId/balance', authenticateToken, calculateGroupBalance);
 
 // POST /:groupId/mark-paid - mark a debt as paid (requires authentication)
 router.post('/:groupId/mark-paid', authenticateToken, markDebtAsPaid);
+
+// DELETE /:groupId - delete a group (requires authentication)
+router.delete('/:groupId', authenticateToken, deleteGroup);
 
 // Mount expense routes under a group
 router.use('/:groupId/expenses', expenseRoutes);
