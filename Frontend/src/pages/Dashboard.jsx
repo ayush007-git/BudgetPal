@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Dashboard.css";
 import logo from "../assets/logo.jpg";
 import { API_BASE_URL } from "../config";
+import UniversalSearch from "../components/UniversalSearch";
+import { useToast } from "../components/ToastProvider";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { showError, showWarning, showInfo } = useToast();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
@@ -13,54 +16,8 @@ export default function Dashboard() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [darkMode, setDarkMode] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchUserGroups();
-    fetchUserData();
-    
-    // Update date every minute
-    const interval = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 60000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  // Refresh groups when component becomes visible
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchUserGroups();
-        if (groups.length > 0) {
-          fetchExpenses();
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [groups]);
-
-  // Fetch expenses after groups are loaded
-  useEffect(() => {
-    if (groups.length > 0) {
-      fetchExpenses();
-    }
-  }, [groups]);
-
-  // Apply dark mode class
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.body.classList.remove('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  }, [darkMode]);
-
-  const fetchUserGroups = async () => {
+  const fetchUserGroups = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -88,7 +45,42 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  const fetchExpenses = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      // Fetch expenses from all groups
+      const allExpenses = [];
+      for (const group of groups) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/groups/${group.id}/expenses`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (res.ok) {
+            const data = await res.json();
+            const groupExpenses = data.data?.expenses || [];
+            // Add group info to each expense
+            groupExpenses.forEach(expense => {
+              expense.groupName = group.name;
+              expense.groupId = group.id;
+            });
+            allExpenses.push(...groupExpenses);
+          }
+        } catch (err) {
+          console.error(`Error fetching expenses for group ${group.id}:`, err);
+        }
+      }
+      setExpenses(allExpenses);
+    } catch (err) {
+      console.error('Error fetching expenses:', err);
+    }
+  }, [groups]);
 
   const fetchUserData = async () => {
     try {
@@ -110,33 +102,51 @@ export default function Dashboard() {
     }
   };
 
-  const fetchExpenses = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+  // useEffect hooks
+  useEffect(() => {
+    fetchUserGroups();
+    fetchUserData();
+    
+    // Update date every minute
+    const interval = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 60000);
+    
+    return () => clearInterval(interval);
+  }, [fetchUserGroups]);
 
-      // Fetch expenses from all groups
-      const allExpenses = [];
-      for (const group of groups) {
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/groups/${group.id}/expenses`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            allExpenses.push(...data.expenses);
-          }
-        } catch (err) {
-          console.error(`Error fetching expenses for group ${group.id}:`, err);
+  // Refresh groups when component becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchUserGroups();
+        if (groups.length > 0) {
+          fetchExpenses();
         }
       }
-      setExpenses(allExpenses);
-    } catch (err) {
-      console.error('Error fetching expenses:', err);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [groups, fetchUserGroups, fetchExpenses]);
+
+  // Fetch expenses after groups are loaded
+  useEffect(() => {
+    if (groups.length > 0) {
+      fetchExpenses();
     }
-  };
+  }, [groups, fetchExpenses]);
+
+  // Apply dark mode class
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, [darkMode]);
 
   // Calculate summary data
   const totalBalance = groups.reduce((acc, g) => acc + g.balance, 0);
@@ -212,7 +222,7 @@ export default function Dashboard() {
     if (groups.length > 0) {
       navigate(`/group/${groups[0].id}/add-expense`);
     } else {
-      alert('Create a group first to add transactions');
+      showWarning('Create a group first to add transactions');
     }
   };
 
@@ -220,7 +230,7 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Please log in to view settlements');
+        showError('Please log in to view settlements');
         return;
       }
 
@@ -271,16 +281,42 @@ export default function Dashboard() {
       navigate('/all-settlements', { state: { settlements: allSettlements } });
     } catch (error) {
       console.error('Error fetching settlements:', error);
-      alert(`Failed to fetch settlements: ${error.message}`);
+      showError(`Failed to fetch settlements: ${error.message}`);
     }
   };
 
   const handleViewReports = () => {
-    alert('Reports feature coming soon!');
+    showInfo('Reports feature coming soon!');
   };
 
   const handleAddGoal = () => {
-    alert('Add Goal feature coming soon!');
+    showInfo('Add Goal feature coming soon!');
+  };
+
+  const handleSearch = (searchResult) => {
+    if (!searchResult) return;
+    
+    // Navigate based on search result type
+    switch (searchResult.type) {
+      case 'group':
+        navigate(`/group/${searchResult.id}`);
+        break;
+      case 'user':
+        // Could navigate to user profile or show user info
+        console.log('User selected:', searchResult);
+        break;
+      case 'expense':
+        // Navigate to the group containing the expense
+        if (searchResult.metadata?.groupName) {
+          const group = groups.find(g => g.name === searchResult.metadata.groupName);
+          if (group) {
+            navigate(`/group/${group.id}`);
+          }
+        }
+        break;
+      default:
+        console.log('Unknown search result type:', searchResult);
+    }
   };
 
   return (
@@ -295,16 +331,12 @@ export default function Dashboard() {
         </div>
         
         <div className="navbar-center">
-          <div className="search-bar-container">
-            <input
-              type="text"
-              className="search-bar"
-              placeholder="Search transactions, groups, etc."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <span className="search-icon">🔍</span>
-          </div>
+          <UniversalSearch
+            onSearch={handleSearch}
+            placeholder="Search groups, users, expenses..."
+            searchTypes={['groups', 'users', 'expenses']}
+            className="dashboard-search"
+          />
         </div>
         
         <div className="navbar-right">

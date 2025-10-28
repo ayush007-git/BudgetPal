@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/GroupDetails.css';
 import { API_BASE_URL } from '../config';
+import UserDropdown from '../components/UserDropdown';
+import { useToast } from '../components/ToastProvider';
 
 export default function GroupDetails() {
   const { groupId } = useParams();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const [group, setGroup] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [members, setMembers] = useState([]);
@@ -13,14 +16,10 @@ export default function GroupDetails() {
   const [loading, setLoading] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMember, setNewMember] = useState({
-    username: ''
+    userId: ''
   });
 
-  useEffect(() => {
-    fetchGroupDetails();
-  }, [groupId]);
-
-  const fetchGroupDetails = async () => {
+  const fetchGroupDetails = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -55,12 +54,23 @@ export default function GroupDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupId, navigate]);
+
+  useEffect(() => {
+    fetchGroupDetails();
+  }, [fetchGroupDetails]);
 
   const handleAddMember = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
+      
+      // Find the username from the selected userId
+      const selectedUser = await fetchUserById(newMember.userId);
+      if (!selectedUser) {
+        showError('Selected user not found');
+        return;
+      }
       
       const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/members`, {
         method: 'POST',
@@ -69,21 +79,42 @@ export default function GroupDetails() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          username: newMember.username
+          username: selectedUser.username
         })
       });
 
       if (res.ok) {
-        setNewMember({ username: '' });
+        setNewMember({ userId: '' });
         setShowAddMember(false);
         fetchGroupDetails(); // Refresh data
+        showSuccess('Member added successfully!');
       } else {
         const error = await res.json();
-        alert(error.message || 'Failed to add member');
+        showError(error.message || 'Failed to add member');
       }
     } catch {
-      alert('Error adding member');
+      showError('Error adding member');
     }
+  };
+
+  // Helper function to fetch user by ID
+  const fetchUserById = async (userId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/auth/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.data.users.find(user => user.id === parseInt(userId));
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    }
+    return null;
   };
 
   const handleDeleteGroup = async () => {
@@ -102,14 +133,14 @@ export default function GroupDetails() {
       });
 
       if (res.ok) {
-        alert('Group deleted successfully');
+        showSuccess('Group deleted successfully!');
         navigate('/dashboard');
       } else {
         const error = await res.json();
-        alert(error.message || 'Failed to delete group');
+        showError(error.message || 'Failed to delete group');
       }
     } catch {
-      alert('Error deleting group');
+      showError('Error deleting group');
     }
   };
 
@@ -166,6 +197,12 @@ export default function GroupDetails() {
             onClick={() => navigate(`/settlement/${groupId}`)}
           >
             ⚖️ Settlement
+          </button>
+          <button 
+            className="header-action-btn chat" 
+            onClick={() => navigate(`/chat/${groupId}`)}
+          >
+            💬 Chat
           </button>
           <button 
             className="header-action-btn delete" 
@@ -278,18 +315,17 @@ export default function GroupDetails() {
             <h3>Add Member to Group</h3>
             <form onSubmit={handleAddMember}>
               <div className="form-group">
-                <label>Username</label>
-                <input
-                  type="text"
-                  value={newMember.username}
-                  onChange={(e) => setNewMember({...newMember, username: e.target.value})}
-                  placeholder="Enter username"
-                  required
+                <label>Select User</label>
+                <UserDropdown
+                  value={newMember.userId}
+                  onChange={(userId) => setNewMember({...newMember, userId})}
+                  placeholder="Choose a user to add..."
+                  className="add-member-dropdown"
                 />
               </div>
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowAddMember(false)}>Cancel</button>
-                <button type="submit">Add Member</button>
+                <button type="submit" disabled={!newMember.userId}>Add Member</button>
               </div>
             </form>
           </div>

@@ -595,4 +595,160 @@ export async function deleteGroup(req, res, next) {
     });
   }
 }
+
+export async function getGroupMessages(req, res, next) {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User authentication required'
+      });
+    }
+
+    // Import models
+    const { default: Group } = await import('../models/group.js');
+    const { default: User } = await import('../models/User.js');
+
+    // Verify user is a member of the group
+    const group = await Group.findByPk(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    const members = await group.getUsers();
+    const isMember = members.some(member => member.id === userId);
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You are not a member of this group.'
+      });
+    }
+
+    // For now, return mock messages since we don't have a Message model yet
+    // In a real implementation, you would fetch from a Message model
+    const mockMessages = [
+      {
+        id: 1,
+        content: 'Hey everyone! How are you doing?',
+        senderId: 1,
+        senderName: 'Alice',
+        timestamp: new Date(Date.now() - 3600000),
+        type: 'text'
+      },
+      {
+        id: 2,
+        content: 'Great! Just finished the project.',
+        senderId: 2,
+        senderName: 'Bob',
+        timestamp: new Date(Date.now() - 3000000),
+        type: 'text'
+      },
+      {
+        id: 3,
+        content: 'Awesome! 🎉',
+        senderId: 3,
+        senderName: 'Charlie',
+        timestamp: new Date(Date.now() - 2400000),
+        type: 'text'
+      }
+    ];
+
+    res.json({
+      success: true,
+      messages: mockMessages
+    });
+
+  } catch (error) {
+    console.error('Get group messages error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching messages'
+    });
+  }
+}
+
+export async function sendGroupMessage(req, res, next) {
+  try {
+    const { groupId } = req.params;
+    const { content, type = 'text' } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User authentication required'
+      });
+    }
+
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message content is required'
+      });
+    }
+
+    // Import models
+    const { default: Group } = await import('../models/group.js');
+    const { default: User } = await import('../models/User.js');
+
+    // Verify user is a member of the group
+    const group = await Group.findByPk(groupId);
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found'
+      });
+    }
+
+    const members = await group.getUsers();
+    const isMember = members.some(member => member.id === userId);
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You are not a member of this group.'
+      });
+    }
+
+    // Get sender info
+    const sender = await User.findByPk(userId);
+    if (!sender) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sender not found'
+      });
+    }
+
+    // For now, return a mock message since we don't have a Message model yet
+    // In a real implementation, you would save to a Message model
+    const newMessage = {
+      id: Date.now(),
+      content: content.trim(),
+      senderId: userId,
+      senderName: sender.username,
+      timestamp: new Date(),
+      type: type
+    };
+
+    res.status(201).json({
+      success: true,
+      message: 'Message sent successfully',
+      data: {
+        message: newMessage
+      }
+    });
+
+  } catch (error) {
+    console.error('Send group message error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while sending message'
+    });
+  }
+}
   

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Auth.css'; 
+import '../styles/Auth.css';
 import { API_BASE_URL } from '../config';
+import { useToast } from '../components/ToastProvider';
 import logo from '../assets/logo.jpg';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError, showInfo } = useToast();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -34,16 +36,17 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok || !data?.success) {
-        alert(data?.message || 'Login failed');
+        showError(data?.message || 'Login failed');
         return;
       }
 
       // Store token and basic user info
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('user', JSON.stringify(data.data.user));
+      showSuccess('Login successful!');
       navigate('/dashboard');
     } catch (err) {
-      alert('Network error. Please try again.');
+      showError('Network error. Please try again.');
     }
   };
 
@@ -59,7 +62,7 @@ const Login = () => {
     const username = prompt('Enter your username to get your emergency question:');
     if (username) {
       // Navigate to a forgot password page or show emergency question
-      alert('Forgot password functionality - would redirect to emergency question page');
+      showInfo('Forgot password functionality - would redirect to emergency question page');
     }
   };
 

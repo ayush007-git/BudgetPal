@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/AddExpense.css';
 import { API_BASE_URL } from '../config';
+import { useToast } from '../components/ToastProvider';
 
 export default function AddExpense() {
   const { groupId } = useParams();
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning } = useToast();
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +122,7 @@ export default function AddExpense() {
     e.preventDefault();
     
     if (!formData.description || !formData.totalAmount || !formData.paidById) {
-      alert('Please fill in all required fields');
+      showWarning('Please fill in all required fields');
       return;
     }
 
@@ -128,7 +130,7 @@ export default function AddExpense() {
       const customTotal = calculateCustomSplitTotal();
       const expectedTotal = parseFloat(formData.totalAmount);
       if (Math.abs(customTotal - expectedTotal) > 0.01) {
-        alert(`Custom split total (₹${customTotal.toFixed(2)}) must equal expense total (₹${expectedTotal.toFixed(2)})`);
+        showError(`Custom split total (₹${customTotal.toFixed(2)}) must equal expense total (₹${expectedTotal.toFixed(2)})`);
         return;
       }
     }
@@ -159,14 +161,14 @@ export default function AddExpense() {
       });
 
       if (res.ok) {
-        alert('Expense added successfully!');
+        showSuccess('Expense added successfully!');
         navigate(`/group/${groupId}`);
       } else {
         const error = await res.json();
-        alert(error.message || 'Failed to add expense');
+        showError(error.message || 'Failed to add expense');
       }
     } catch (err) {
-      alert('Error adding expense');
+      showError('Error adding expense');
     }
   };
 

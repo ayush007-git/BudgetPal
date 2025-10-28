@@ -377,4 +377,91 @@ router.delete('/delete-account', authenticateToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/auth/users
+// @desc    Get all users except current user (for dropdowns)
+// @access  Private
+router.get('/users', authenticateToken, async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+    const { search } = req.query;
+
+    // Build where clause
+    let whereClause = {
+      id: { [require('sequelize').Op.ne]: currentUserId } // Exclude current user
+    };
+
+    // Add search filter if provided
+    if (search && search.trim().length > 0) {
+      whereClause.username = { 
+        [require('sequelize').Op.iLike]: `%${search.trim()}%` 
+      };
+    }
+
+    // Fetch users
+    const users = await User.findAll({
+      where: whereClause,
+      attributes: ['id', 'username', 'createdAt'],
+      order: [['username', 'ASC']],
+      limit: 50 // Limit results for performance
+    });
+
+    res.json({
+      success: true,
+      data: {
+        users: users.map(user => ({
+          id: user.id,
+          username: user.username,
+          createdAt: user.createdAt
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching users'
+    });
+  }
+});
+
+// @route   GET /api/auth/me
+// @desc    Get current user info
+// @access  Private
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'username', 'createdAt', 'lastLogin']
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          username: user.username,
+          createdAt: user.createdAt,
+          lastLogin: user.lastLogin
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Get user info error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching user info'
+    });
+  }
+});
+
 export default router;

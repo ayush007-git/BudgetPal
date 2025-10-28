@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Settings.css';
 import { API_BASE_URL } from '../config';
+import { useToast } from '../components/ToastProvider';
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning } = useToast();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
@@ -70,14 +72,14 @@ export default function Settings() {
       });
 
       if (res.ok) {
-        alert('Profile updated successfully!');
+        showSuccess('Profile updated successfully!');
         fetchUserData();
       } else {
         const error = await res.json();
-        alert(error.message || 'Failed to update profile');
+        showError(error.message || 'Failed to update profile');
       }
     } catch (err) {
-      alert('Error updating profile');
+      showError('Error updating profile');
     }
   };
 
@@ -85,12 +87,12 @@ export default function Settings() {
     e.preventDefault();
     
     if (formData.newPassword !== formData.confirmPassword) {
-      alert('New passwords do not match');
+      showError('New passwords do not match');
       return;
     }
 
     if (formData.newPassword.length < 6) {
-      alert('New password must be at least 6 characters');
+      showError('New password must be at least 6 characters');
       return;
     }
 
@@ -112,7 +114,7 @@ export default function Settings() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert('Password changed successfully!');
+        showSuccess('Password changed successfully!');
         // Reset password form
         setFormData(prev => ({
           ...prev,
@@ -121,10 +123,10 @@ export default function Settings() {
           confirmPassword: ''
         }));
       } else {
-        alert(data.message || 'Failed to change password');
+        showError(data.message || 'Failed to change password');
       }
     } catch (err) {
-      alert('Error changing password. Please try again.');
+      showError('Error changing password. Please try again.');
     }
   };
 
@@ -147,16 +149,16 @@ export default function Settings() {
         });
 
         if (res.ok) {
-          alert('Account deleted successfully');
+          showSuccess('Account deleted successfully');
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           navigate('/login');
         } else {
           const error = await res.json();
-          alert(error.message || 'Failed to delete account');
+          showError(error.message || 'Failed to delete account');
         }
       } catch (err) {
-        alert('Error deleting account. Please try again.');
+        showError('Error deleting account. Please try again.');
       }
     }
   };

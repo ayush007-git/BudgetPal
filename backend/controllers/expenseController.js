@@ -1,4 +1,78 @@
-import { sequelize, Group, Expense, Debt } from '../models/index.js';
+import { sequelize, Group, Expense, Debt, User } from '../models/index.js';
+
+export async function getGroupExpenses(req, res, next) {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User authentication required'
+      });
+    }
+
+    // Check if user is a member of the group
+    const group = await Group.findByPk(groupId, {
+      include: [{
+        model: User,
+        through: { attributes: [] },
+        where: { id: userId },
+        attributes: ['id']
+      }]
+    });
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group not found or you are not a member'
+      });
+    }
+
+    // Fetch expenses for the group
+    const expenses = await Expense.findAll({
+      where: { groupId },
+      include: [
+        {
+          model: User,
+          as: 'paidBy',
+          attributes: ['id', 'username']
+        },
+        {
+          model: Debt,
+          include: [{
+            model: User,
+            as: 'debtor',
+            attributes: ['id', 'username']
+          }]
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      data: {
+        expenses: expenses.map(expense => ({
+          id: expense.id,
+          description: expense.description,
+          totalAmount: expense.totalAmount,
+          date: expense.date,
+          screenshotUrl: expense.screenshotUrl,
+          paidBy: expense.paidBy,
+          debts: expense.Debts || []
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get group expenses error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching expenses'
+    });
+  }
+}
 
 export async function createExpense(req, res, next) {
   try {

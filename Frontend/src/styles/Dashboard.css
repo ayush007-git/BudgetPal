@@ -779,3 +779,33 @@ textarea.styled-input {
   border-color: #9ca3af;
   background: #f9fafb;
 }
+
+/* Universal Search Integration */
+.dashboard-search {
+  width: 100%;
+  max-width: 500px;
+}
+
+.dashboard-search .search-input-wrapper {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.dashboard-search.expanded .search-input-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #667eea;
+}
+
+.settlements-search {
+  margin: 0 20px 30px;
+}
+
+.settlements-search .search-input-wrapper {
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.settlements-search.expanded .search-input-wrapper {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #667eea;
+}

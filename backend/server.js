@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import databaseRoutes from './routes/database.js';
 import groupRoutes from './routes/groupRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -55,6 +56,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/database', databaseRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/search', searchRoutes);
 
 // Error handling middleware
 app.use(notFound);
