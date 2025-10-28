@@ -4,6 +4,7 @@ import '../styles/Auth.css';
 import { API_BASE_URL } from '../config';
 import { useToast } from '../components/ToastProvider';
 import logo from '../assets/logo.jpg';
+import signupGif from '../assets/signup-animation.gif'; // <-- Import GIF
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -60,7 +61,15 @@ const Signup = () => {
 
   return (
     <div className="split-auth-container">
-      <div className="auth-left-panel signup-left">
+      {/* LEFT PANEL WITH GIF */}
+      <div 
+        className="auth-left-panel signup-left"
+        style={{
+          backgroundImage: `url(${signupGif})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <button className="back-to-home-btn" onClick={handleBackToHome}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

@@ -3,11 +3,9 @@ import { Link } from 'react-router-dom';
 import '../styles/Landing.css';
 import logo from '../assets/logo.jpg'; 
 import Features from './Features';
-import Pricing from './Pricing';
 import About from './About';
 import Contact from './Contact';
 import Footer from './Footer';
-
 
 const BudgetPalLanding = () => {
   return (
@@ -22,7 +20,6 @@ const BudgetPalLanding = () => {
         
         <div className="nav-menu">
           <a href="#features" className="nav-link">Features</a>
-          <a href="#pricing" className="nav-link">Pricing</a>
           <a href="#about" className="nav-link">About</a>
           <a href="#contact" className="nav-link">Contact</a>
         </div>
@@ -32,6 +29,7 @@ const BudgetPalLanding = () => {
           <Link to="/login" className="get-started-btn">Get Started</Link>
         </div>
       </nav>
+
       <div className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
@@ -97,6 +95,8 @@ const BudgetPalLanding = () => {
                 </div>
               </div>
             </div>
+
+            {/* Floating Elements */}
             <div className="floating-element top-left">
               <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -108,6 +108,8 @@ const BudgetPalLanding = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
             </div>
+
+            {/* Illustrations */}
             <div className="person left-person">
               <div className="person-head"></div>
               <div className="person-body"></div>
@@ -129,11 +131,14 @@ const BudgetPalLanding = () => {
           </div>
         </div>
       </div>
+
+      {/* Sections */}
       <Features />
-      <Pricing />
       <About />
       <Contact />
       <Footer />
+
+      {/* Background Circles */}
       <div className="bg-circle circle-1"></div>
       <div className="bg-circle circle-2"></div>
       <div className="bg-circle circle-3"></div>
