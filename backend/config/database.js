@@ -3,15 +3,20 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Render provides DATABASE_URL for PostgreSQL
-const databaseUrl = process.env.DATABASE_URL || 
+// DATABASE_URL is expected for hosted Postgres (e.g., Supabase)
+const databaseUrl = process.env.DATABASE_URL ||
   `postgres://${process.env.POSTGRES_USER || 'postgres'}:${process.env.POSTGRES_PASSWORD || 'password'}@${process.env.POSTGRES_HOST || 'localhost'}:${process.env.POSTGRES_PORT || 5432}/${process.env.POSTGRES_DB || 'budgetpal'}`;
+
+// Determine SSL usage: enable for non-local databases by default or when DATABASE_SSL=true
+const isLocal = /localhost|127\.0\.0\.1/i.test(databaseUrl);
+const forceSsl = String(process.env.DATABASE_SSL || '').toLowerCase() === 'true';
+const useSsl = !isLocal || forceSsl;
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   dialectOptions: {
-    ssl: process.env.NODE_ENV === 'production' ? {
+    ssl: useSsl ? {
       require: true,
       rejectUnauthorized: false
     } : false
