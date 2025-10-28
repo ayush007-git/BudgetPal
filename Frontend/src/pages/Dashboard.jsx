@@ -138,15 +138,15 @@ export default function Dashboard() {
   }, [groups, fetchExpenses]);
 
   // Apply dark mode class
-  useEffect(() => {
-    if (darkMode) {
+  /*useEffect(() => {
+   if (darkMode) {
       document.body.classList.add('dark-mode');
       document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       document.body.classList.remove('dark-mode');
       document.documentElement.setAttribute('data-theme', 'light');
     }
-  }, [darkMode]);
+  }, [darkMode]);*/
 
   // Calculate summary data
   const totalBalance = groups.reduce((acc, g) => acc + g.balance, 0);
@@ -345,9 +345,9 @@ export default function Dashboard() {
               🔔
             </span>
             
-            <button onClick={toggleDarkMode} className="icon-btn dark-mode-toggle" title={darkMode ? 'Light Mode' : 'Dark Mode'}>
+           {/*<button onClick={toggleDarkMode} className="icon-btn dark-mode-toggle" title={darkMode ? 'Light Mode' : 'Dark Mode'}>
               {darkMode ? '☀️' : '🌙'}
-            </button>
+            </button>*/}
             
             <div className="profile-container">
               <button 
@@ -388,7 +388,7 @@ export default function Dashboard() {
       <div className="header-section">
         <div className="header-content">
           <div className="welcome-text">
-            <h2>Welcome back, {userData?.username || 'User'} 👋</h2>
+            <h2>Welcome, {userData?.username || 'User'} 👋</h2>
             <p>Here's your {getCurrentMonth()} overview.</p>
           </div>
         </div>
@@ -412,7 +412,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="summary-card card-3">
+        {/*<div className="summary-card card-3">
           <div className="card-icon">💳</div>
           <div className="card-content">
             <p className="card-label">Total Expenses</p>
@@ -434,7 +434,7 @@ export default function Dashboard() {
             <p className="card-label">Net Savings</p>
             <h3 className="card-value">₹{netSavings.toFixed(2)}</h3>
           </div>
-        </div>
+        </div>*/}
       </div>
 
       {/* Analytics Section */}
@@ -512,10 +512,10 @@ export default function Dashboard() {
             <div className="action-label">Reports</div>
           </button>
 
-          <button className="action-btn" onClick={handleAddGoal}>
+          {/*<button className="action-btn" onClick={handleAddGoal}>
             <div className="action-icon">🎯</div>
             <div className="action-label">Add Goal</div>
-          </button>
+          </button>*/}
         </div>
       </div>
 

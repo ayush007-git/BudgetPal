@@ -6,14 +6,14 @@ import { useToast } from '../components/ToastProvider';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { showSuccess, showError, showWarning } = useToast();
+  const { showSuccess, showError } = useToast();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
     username: '',
-    emergencyQuestion: '',
-    emergencyAnswer: '',
+    email: '',
+    contact: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -36,10 +36,12 @@ export default function Settings() {
       setFormData(prev => ({
         ...prev,
         username: userData.username || '',
-        emergencyQuestion: userData.emergencyQuestion || ''
+        email: userData.email || '',
+        contact: userData.phone || ''
       }));
     } catch (err) {
       console.error('Error fetching user data:', err);
+      showError('Failed to fetch user data');
     } finally {
       setLoading(false);
     }
@@ -57,8 +59,8 @@ export default function Settings() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      
-      const res = await fetch(`${API_BASE_URL}/api/auth/set-emergency-question`, {
+
+      const res = await fetch(`${API_BASE_URL}/api/auth/update-profile`, { // Adjust API endpoint if needed
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -66,8 +68,8 @@ export default function Settings() {
         },
         body: JSON.stringify({
           username: formData.username,
-          emergencyQuestion: formData.emergencyQuestion,
-          emergencyAnswer: formData.emergencyAnswer
+          email: formData.email,
+          contact: formData.contact
         })
       });
 
@@ -85,7 +87,7 @@ export default function Settings() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    
+
     if (formData.newPassword !== formData.confirmPassword) {
       showError('New passwords do not match');
       return;
@@ -98,7 +100,7 @@ export default function Settings() {
 
     try {
       const token = localStorage.getItem('token');
-      
+
       const res = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
         method: 'PUT',
         headers: {
@@ -115,7 +117,6 @@ export default function Settings() {
 
       if (res.ok && data.success) {
         showSuccess('Password changed successfully!');
-        // Reset password form
         setFormData(prev => ({
           ...prev,
           currentPassword: '',
@@ -140,7 +141,7 @@ export default function Settings() {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       try {
         const token = localStorage.getItem('token');
-        
+
         const res = await fetch(`${API_BASE_URL}/api/auth/delete-account`, {
           method: 'DELETE',
           headers: {
@@ -163,9 +164,7 @@ export default function Settings() {
     }
   };
 
-  if (loading) {
-    return <div className="loading">Loading settings...</div>;
-  }
+  if (loading) return <div className="loading">Loading settings...</div>;
 
   return (
     <div className="settings-page">
@@ -181,25 +180,25 @@ export default function Settings() {
         {/* Sidebar */}
         <div className="settings-sidebar">
           <nav className="settings-nav">
-            <button 
+            <button
               className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
               onClick={() => setActiveTab('profile')}
             >
               👤 Profile
             </button>
-            <button 
+            <button
               className={`nav-item ${activeTab === 'security' ? 'active' : ''}`}
               onClick={() => setActiveTab('security')}
             >
               🔒 Security
             </button>
-            <button 
+            <button
               className={`nav-item ${activeTab === 'notifications' ? 'active' : ''}`}
               onClick={() => setActiveTab('notifications')}
             >
               🔔 Notifications
             </button>
-            <button 
+            <button
               className={`nav-item ${activeTab === 'account' ? 'active' : ''}`}
               onClick={() => setActiveTab('account')}
             >
@@ -227,29 +226,29 @@ export default function Settings() {
                   />
                   <small>Username cannot be changed</small>
                 </div>
-                
+
                 <div className="form-group">
-                  <label>Emergency Question</label>
+                  <label>Email</label>
                   <input
-                    type="text"
-                    name="emergencyQuestion"
-                    value={formData.emergencyQuestion}
+                    type="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="e.g., What is your mother's maiden name?"
+                    placeholder="Enter your email"
                   />
                 </div>
-                
+
                 <div className="form-group">
-                  <label>Emergency Answer</label>
+                  <label>Contact</label>
                   <input
                     type="text"
-                    name="emergencyAnswer"
-                    value={formData.emergencyAnswer}
+                    name="contact"
+                    value={formData.contact}
                     onChange={handleInputChange}
-                    placeholder="Your answer"
+                    placeholder="Enter your contact number"
                   />
                 </div>
-                
+
                 <button type="submit" className="save-btn">Save Changes</button>
               </form>
             </div>
@@ -270,7 +269,7 @@ export default function Settings() {
                     required
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>New Password</label>
                   <input
@@ -282,7 +281,7 @@ export default function Settings() {
                     minLength={6}
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label>Confirm New Password</label>
                   <input
@@ -293,7 +292,7 @@ export default function Settings() {
                     required
                   />
                 </div>
-                
+
                 <button type="submit" className="save-btn">Change Password</button>
               </form>
             </div>
@@ -314,7 +313,7 @@ export default function Settings() {
                     <span className="slider"></span>
                   </label>
                 </div>
-                
+
                 <div className="setting-item">
                   <div className="setting-info">
                     <h4>Payment Reminders</h4>
@@ -325,7 +324,7 @@ export default function Settings() {
                     <span className="slider"></span>
                   </label>
                 </div>
-                
+
                 <div className="setting-item">
                   <div className="setting-info">
                     <h4>Group Updates</h4>
@@ -352,7 +351,7 @@ export default function Settings() {
                   </div>
                   <button className="action-btn secondary">Export</button>
                 </div>
-                
+
                 <div className="action-item">
                   <div className="action-info">
                     <h4>Logout</h4>
@@ -360,7 +359,7 @@ export default function Settings() {
                   </div>
                   <button className="action-btn warning" onClick={handleLogout}>Logout</button>
                 </div>
-                
+
                 <div className="action-item danger">
                   <div className="action-info">
                     <h4>Delete Account</h4>

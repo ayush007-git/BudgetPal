@@ -562,3 +562,130 @@ body, html {
   color: #7c3aed;
   text-decoration: underline;
 }
+/* Smooth fade slider styles */
+.auth-left-panel {
+  position: relative;
+  width: 50%;
+  height: 100vh;
+  background: #bde7ff;
+  overflow: hidden;
+}
+
+.auth-fade-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.auth-fade-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.auth-fade-slide.active {
+  opacity: 1;
+}
+
+/* Slider Dots */
+.slider-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 3;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: background 0.3s;
+}
+
+.dot.active {
+  background: white;
+}
+
+/* Back to home button */
+.back-to-home-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: #333;
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.back-to-home-btn:hover {
+  background: white;
+}
+/* Smaller and smoother fade images */
+.auth-fade-slider {
+  position: relative;
+  width: 80%;
+  height: 70%;
+  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+}
+
+.auth-fade-slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* keeps image proportional */
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.auth-fade-slide.active {
+  opacity: 1;
+}
+
+/* Dots below slider */
+.slider-dots {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: background 0.3s;
+}
+
+.dot.active {
+  background: white;
+}
+
+/* Make left panel background match the image palette */
+.auth-left-panel {
+  background: linear-gradient(135deg, #a6d8ff, #d5f1ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
