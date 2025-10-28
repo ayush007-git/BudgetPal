@@ -151,7 +151,7 @@ export async function createGroup(req, res, next) {
 export async function addMemberToGroup(req, res, next) {
   try {
     const { groupId } = req.params;
-    const { username } = req.body;
+    const { username, userId: userIdParam } = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -161,10 +161,10 @@ export async function addMemberToGroup(req, res, next) {
       });
     }
 
-    if (!username) {
+    if (!username && !userIdParam) {
       return res.status(400).json({
         success: false,
-        message: 'Username is required'
+        message: 'username or userId is required'
       });
     }
 
@@ -192,7 +192,12 @@ export async function addMemberToGroup(req, res, next) {
     }
 
     // Find the user to add
-    const userToAdd = await User.findOne({ where: { username } });
+    let userToAdd = null;
+    if (userIdParam) {
+      userToAdd = await User.findByPk(userIdParam);
+    } else if (username) {
+      userToAdd = await User.findOne({ where: { username } });
+    }
     if (!userToAdd) {
       return res.status(404).json({
         success: false,
