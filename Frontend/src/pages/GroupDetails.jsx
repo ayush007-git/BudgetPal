@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/GroupDetails.css';
 import { API_BASE_URL } from '../config';
 import UserDropdown from '../components/UserDropdown';
+import SimpleAddMemberModal from '../components/SimpleAddMemberModal';
 import { useToast } from '../components/ToastProvider';
 
 export default function GroupDetails() {
@@ -15,9 +16,6 @@ export default function GroupDetails() {
   const [_balance, setBalance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
-  const [newMember, setNewMember] = useState({
-    userId: ''
-  });
 
   const fetchGroupDetails = useCallback(async () => {
     try {
@@ -60,41 +58,9 @@ export default function GroupDetails() {
     fetchGroupDetails();
   }, [fetchGroupDetails]);
 
-  const handleAddMember = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      
-      // Find the username from the selected userId
-      const selectedUser = await fetchUserById(newMember.userId);
-      if (!selectedUser) {
-        showError('Selected user not found');
-        return;
-      }
-      
-      const res = await fetch(`${API_BASE_URL}/api/groups/${groupId}/members`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          username: selectedUser.username
-        })
-      });
-
-      if (res.ok) {
-        setNewMember({ userId: '' });
-        setShowAddMember(false);
-        fetchGroupDetails(); // Refresh data
-        showSuccess('Member added successfully!');
-      } else {
-        const error = await res.json();
-        showError(error.message || 'Failed to add member');
-      }
-    } catch {
-      showError('Error adding member');
-    }
+  const handleMemberAdded = () => {
+    fetchGroupDetails();
+    showSuccess('Member added successfully!');
   };
 
   // Helper function to fetch user by ID
@@ -308,29 +274,15 @@ export default function GroupDetails() {
         </div>
       </div>
 
-      {/* Add Member Modal */}
-      {showAddMember && (
-        <div className="modal-overlay" onClick={() => setShowAddMember(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Add Member to Group</h3>
-            <form onSubmit={handleAddMember}>
-              <div className="form-group">
-                <label>Select User</label>
-                <UserDropdown
-                  value={newMember.userId}
-                  onChange={(userId) => setNewMember({...newMember, userId})}
-                  placeholder="Choose a user to add..."
-                  className="add-member-dropdown"
-                />
-              </div>
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowAddMember(false)}>Cancel</button>
-                <button type="submit" disabled={!newMember.userId}>Add Member</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Add Member Modal - simplified by username */}
+      <SimpleAddMemberModal
+        groupId={groupId}
+        isOpen={showAddMember}
+        onClose={() => setShowAddMember(false)}
+        onAdded={handleMemberAdded}
+        showError={showError}
+        showSuccess={showSuccess}
+      />
     </div>
   );
 }

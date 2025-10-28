@@ -1,0 +1,102 @@
+.amodal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, 0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.amodal {
+  width: 92%;
+  max-width: 520px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.9), rgba(245,240,255,0.8));
+  box-shadow: 0 10px 30px rgba(90, 80, 200, 0.25);
+  overflow: hidden;
+}
+
+.amodal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.amodal-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.amodal-search {
+  padding: 12px 18px;
+}
+
+.amodal-search input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.75);
+}
+
+.amodal-body {
+  max-height: 60vh;
+  overflow: auto;
+  padding: 6px 8px 14px 8px;
+}
+
+.amodal-loading, .amodal-empty, .amodal-error {
+  padding: 12px 18px;
+  color: #555;
+}
+
+.amodal-error { color: #b00020; }
+
+.amodal-list { display: flex; flex-direction: column; gap: 8px; }
+
+.amodal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+}
+
+.amodal-avatar {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #9b8cff, #6aa8ff);
+  color: white;
+  font-weight: 600;
+}
+
+.amodal-info { flex: 1; }
+.amodal-name { font-weight: 600; }
+.amodal-sub { font-size: 12px; color: #666; }
+
+.amodal-add {
+  border: none;
+  background: linear-gradient(145deg, #7c6bff, #4d9bff);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .amodal { width: 100%; height: 100%; max-width: none; border-radius: 0; }
+  .amodal-body { max-height: calc(100vh - 140px); }
+}
+
+
