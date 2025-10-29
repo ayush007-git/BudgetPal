@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [userData, setUserData] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [darkMode, setDarkMode] = useState(false);
+  // const [darkMode, setDarkMode] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const fetchUserGroups = useCallback(async () => {
@@ -153,12 +153,12 @@ export default function Dashboard() {
   const totalIncome = expenses
     .filter(e => e.type === 'income')
     .reduce((acc, e) => acc + parseFloat(e.amount), 0);
-  const totalExpenses = expenses
-    .filter(e => e.type === 'expense')
-    .reduce((acc, e) => acc + parseFloat(e.amount), 0);
-  const netSavings = totalIncome - totalExpenses;
-  const savingsGoal = 20000; // Placeholder
-  const savingsProgress = Math.min(100, (totalBalance / savingsGoal) * 100);
+  // const totalExpenses = expenses
+    // .filter(e => e.type === 'expense')
+    // .reduce((acc, e) => acc + parseFloat(e.amount), 0);
+  // const netSavings = totalIncome - totalExpenses;
+  // const savingsGoal = 20000; // Placeholder
+  // const savingsProgress = Math.min(100, (totalBalance / savingsGoal) * 100);
 
   // Calculate expense breakdown by category
   const categoryBreakdown = expenses
@@ -191,10 +191,10 @@ export default function Dashboard() {
     navigate('/notifications');
   };
 
-  const handleSettings = () => {
-    navigate('/settings');
-    setShowProfileDropdown(false);
-  };
+  // const handleSettings = () => {
+  //   navigate('/settings');
+  //   setShowProfileDropdown(false);
+  // };
 
   const handleProfile = () => {
     navigate('/settings');
@@ -202,13 +202,22 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+    try {
+      // Clear local storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Redirect to login page
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      showError('Logout failed. Please try again.');
+    }
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  // const toggleDarkMode = () => {
+    // setDarkMode(!darkMode);
+  // };
 
   const handleCreateGroup = () => {
     navigate('/create-group');
@@ -289,9 +298,9 @@ export default function Dashboard() {
     showInfo('Reports feature coming soon!');
   };
 
-  const handleAddGoal = () => {
-    showInfo('Add Goal feature coming soon!');
-  };
+  // const handleAddGoal = () => {
+  //   showInfo('Add Goal feature coming soon!');
+  // };
 
   const handleSearch = (searchResult) => {
     if (!searchResult) return;
@@ -367,9 +376,6 @@ export default function Dashboard() {
                   <div className="profile-dropdown-divider"></div>
                   <button onClick={handleProfile} className="dropdown-item">
                     👤 Profile
-                  </button>
-                  <button onClick={handleSettings} className="dropdown-item">
-                    ⚙️ Settings
                   </button>
                   <div className="profile-dropdown-divider"></div>
                   <button onClick={handleLogout} className="dropdown-item logout-btn">
