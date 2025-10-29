@@ -29,6 +29,16 @@ const sequelize = new Sequelize(databaseUrl, {
   }
 });
 
+try {
+  // Use Node's URL parser so we only print host & port (no password)
+  const parsedDbUrl = new URL(databaseUrl);
+  console.log('🔧 DB host:', parsedDbUrl.hostname);
+  console.log('🔧 DB port:', parsedDbUrl.port || '(default 5432)');
+  console.log('🔧 Sequelize dialect:', sequelize.getDialect());
+} catch (err) {
+  console.log('⚠️ Could not parse DATABASE_URL for host/port check:', err.message);
+}
+
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
