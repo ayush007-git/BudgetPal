@@ -14,6 +14,7 @@ const Signup = () => {
     email: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,29 +26,43 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    console.log('Attempting to sign up with:', formData);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
         body: JSON.stringify({
           username: formData.username,
+          email: formData.email,
           password: formData.password
         })
       });
+      
+      console.log('Response status:', res.status);
       const data = await res.json();
+      console.log('Response data:', data);
 
-      if (!res.ok || !data?.success) {
-        showError(data?.message || 'Signup failed');
-        return;
+      if (!res.ok) {
+        throw new Error(data?.message || 'Signup failed');
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.message || 'Signup failed');
       }
 
       localStorage.setItem('token', data.data.token);
       localStorage.setItem('user', JSON.stringify(data.data.user));
       showSuccess('Account created successfully!');
-      navigate('/dashboard'); 
+      navigate('/dashboard');
     } catch (err) {
-      showError('Network error. Please try again.');
+      showError(err.message || 'Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -137,8 +152,12 @@ const Signup = () => {
               />
             </div>
 
-            <button type="submit" className="primary-btn">
-              Sign Up
+            <button 
+              type="submit" 
+              className="primary-btn" 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing up...' : 'Sign Up'}
             </button>
 
             <p className="switch-text">

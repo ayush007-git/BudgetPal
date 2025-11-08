@@ -16,6 +16,11 @@ const Login = () => {
   const images = [loginImage1, loginImage2, loginImage3];
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // 🧠 Debug: Confirm API base URL loaded correctly
+  useEffect(() => {
+    console.log("🚀 API_BASE_URL currently set to:", API_BASE_URL);
+  }, []);
+
   // Image fade slider
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,8 +29,12 @@ const Login = () => {
     return () => clearInterval(interval);
   }, [images.length]);
 
+  // 🧩 Handle login submit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🟡 Login form submitted with:", formData);
+    console.log("📡 Sending request to:", `${API_BASE_URL}/api/auth/login`);
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
@@ -33,7 +42,11 @@ const Login = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      console.log("📥 Response status:", res.status);
+
+      const data = await res.json().catch(() => ({}));
+      console.log("📦 Response data:", data);
+
       if (!res.ok || !data?.success) {
         showError(data?.message || "Login failed");
         return;
@@ -43,7 +56,8 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(data.data.user));
       showSuccess("Login successful!");
       navigate("/dashboard");
-    } catch {
+    } catch (err) {
+      console.error("❌ Fetch error occurred:", err);
       showError("Network error. Please try again.");
     }
   };
@@ -75,8 +89,6 @@ const Login = () => {
               }`}
             />
           ))}
-
-
         </div>
       </div>
 
